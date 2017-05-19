@@ -21,6 +21,28 @@ app.controller('control', ['$scope', function($scope){
 	$scope.generateAll = function(){
 		for(var i=0; i<$scope.links.length; i++)$scope.generate(i);
 	}
+	
+	// create a hidden input for copy
+	var body = angular.element(document.body);
+	var textarea = angular.element('<input/>');
+	textarea.css({
+		position: 'fixed',
+		opacity: '0'
+	});
+	body.append(textarea);
+	
+	// copy links to clipboard
+	$scope.copy = function(i, type){
+		if(type=='hlink')textarea.val($scope.links[i].hlink)
+		else textarea.val($scope.links[i].dlink)
+		if(!textarea.val()){
+			$scope.message = "This field is empty"
+			return
+		}
+		textarea[0].select()
+		if(document.execCommand("copy"))$scope.message = "Copy success";
+		else $scope.message = "Copy failure"
+	}
 
 }])
 
@@ -70,4 +92,4 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 	}catch(err){
 		console.log(err);
 	}
-})
+});

@@ -12,14 +12,18 @@
 				<tr>
 					<td>File name</td>
 					<td>Links</td>
+					<td></td>
 					<td>High speed links</td>
 					<td><button ng-click="generateAll()">GenerateAll</button></td>
+					<td></td>
 				</tr>
 				<tr ng-repeat="x in links">
 					<td><input type='text' value={{x.path}} ng-disabled='true'></td>
 					<td><input type='text' value={{x.dlink}} ng-disabled='true'></td>
+					<td><button ng-click="copy($index, 'dlink')">Copy</button></td>
 					<td><input type='text' value={{x.hlink}} ng-disabled='true'></td>
 					<td><button ng-click="generate($index)">Generate</button></td>
+					<td><button ng-click="copy($index, 'hlink')">Copy</button></td>
 				</tr>
 			</table>
 			<p>{{message}}</p>
