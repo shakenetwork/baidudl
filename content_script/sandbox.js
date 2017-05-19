@@ -1,12 +1,7 @@
 // inject function, inject core.js to pan.baidu.com
 console.log('Injecting code');
-$.getScript(chrome.extension.getURL('/content_script/injection.js'))
-$.getScript(chrome.extension.getURL('/content_script/injection_listener.js'))
-
-function reload_js(src) {
-	$('script[src="' + src + '"]').remove();
-	$('<script>').attr('src', src).appendTo('head');
-}
+$.getScript(chrome.extension.getURL('/content_script/injection.js'));
+$.getScript(chrome.extension.getURL('/content_script/injection_listener.js'));
 
 // receive download links from web and send them to popup
 window.addEventListener('passLinks', function(req){
@@ -29,5 +24,10 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 	}
 	if(req.greeting){
 		sendResponse({greeting: 'yes'});
+	}
+	if(req.page){
+		var event = new CustomEvent('run', {detail: req});
+		window.dispatchEvent(event);
+		sendResponse('run');
 	}
 })

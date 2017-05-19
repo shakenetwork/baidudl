@@ -26,6 +26,7 @@
 					<td><button ng-click="copy($index, 'hlink')">Copy</button></td>
 				</tr>
 			</table>
+			<div ng-hide='!status'><button ng-click="prev()">&lt;</button>{{page}}<button ng-click="next()">&gt;</button></div>
 			<p>{{message}}</p>
 		</div>
 	</body>

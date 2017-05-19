@@ -2,8 +2,9 @@
 	"manifest_version": 2,
 
 	"name": "baidudl",
+	"short_name": "baidudl",
 	"description": "Extract high speed download links from pan.baidu.com. Github: https://github.com/Kyle-Kyle/baidudl",
-	"version": "0.3.4",
+	"version": "0.3.5",
 
 	"web_accessible_resources": [
 		"content_script/injection_listener.js",

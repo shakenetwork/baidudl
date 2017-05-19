@@ -34,3 +34,7 @@ window.addEventListener('receiveFs', function(req){
 		}
 	});
 })
+
+window.addEventListener('run', function(req){
+	injection(req.detail.page);
+})

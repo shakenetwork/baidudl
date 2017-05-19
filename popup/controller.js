@@ -3,6 +3,7 @@ var app = angular.module('app', []);
 app.controller('control', ['$scope', function($scope){
 	$scope.message = 'pan.baidu.com only';
 	$scope.status = false;
+	$scope.page = 1;
 	
 	// function to generate high speed link
 	$scope.generate = function(i){
@@ -29,6 +30,31 @@ app.controller('control', ['$scope', function($scope){
 		position: 'fixed',
 		opacity: '0'
 	});
+
+	$scope.prev = function(){
+		if($scope.page == 1){
+			$scope.message = "Already the first page";
+			return
+		}
+		$scope.page -= 1;
+		$scope.run();
+	}
+	$scope.next = function(){
+		if($scope.links.length < 100){
+			$scope.message = "Already the last page";
+			return
+		}
+		$scope.page += 1;
+		$scope.run();
+	}
+	$scope.run = function(){
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			var url = tabs[0].url;
+			chrome.tabs.sendMessage(tabs[0].id, {page: $scope.page}, function(res){
+				$scope.$apply(function(){$scope.message = "Ready."});
+			})
+		})
+	}
 	body.append(textarea);
 	
 	// copy links to clipboard
@@ -85,7 +111,9 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 				if(!response){
 					chrome.tabs.executeScript({file: "content_script/sandbox.js"});
 				}else{
-					chrome.tabs.executeScript({code: "reload_js(chrome.extension.getURL('/content_script/injection.js'))"});
+					chrome.tabs.sendMessage(tabs[0].id, {page: $scope.page}, function(res){
+						console.log(res);
+					})
 				}
 			})
 		}

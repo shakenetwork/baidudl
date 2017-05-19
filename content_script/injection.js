@@ -1,3 +1,4 @@
+function injection(page){
 var url = window.location.href
 
 if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home/)){
@@ -52,7 +53,7 @@ function getURLParameter(name) {
 // retrieve download links
 console.log('Retrieving links');
 $.ajax({// list files in current folder and get their fs_id
-	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page=1",
+	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page="+page,
 	success: function(res){
 		console.log('links retrieved');
 		var dict = {};
@@ -94,6 +95,9 @@ $.ajax({// list files in current folder and get their fs_id
 	var event = new CustomEvent("error", {detail: err_msg});
 	window.dispatchEvent(event);
 }
+}
+
+
 
 function get_hlink(new_yunData){
 	$.ajax({
@@ -159,3 +163,4 @@ function unshare(shareid){
 		}
 	})
 }
+injection(1)
