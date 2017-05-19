@@ -1,6 +1,6 @@
 var url = window.location.href
 
-if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home#list\//)){
+if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home/)){
 console.log("Code Injected");
 // variant base64 encoding function, copy from pan.baidu.com
 function b64(t) {
