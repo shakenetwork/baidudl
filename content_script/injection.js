@@ -58,7 +58,8 @@ $.ajax({// list files in current folder and get their fs_id
 		console.log('links retrieved');
 		var dict = {};
 		res.list.forEach(function(e){
-			dict[e.fs_id] = e.path;
+			var len = e.path.split('/').length;
+			dict[e.fs_id] = e.path.split('/')[len-1];
 		})
 
 		var fidlist = res.list.map(function(d){return d.fs_id})

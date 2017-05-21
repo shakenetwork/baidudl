@@ -18,7 +18,7 @@
 					<td></td>
 				</tr>
 				<tr ng-repeat="x in links">
-					<td><input type='text' value={{x.path}} ng-disabled='true'></td>
+					<td><input style="width: 300px" type='text' value={{x.path}} ng-disabled='true'></td>
 					<td><input type='text' value={{x.dlink}} ng-disabled='true'></td>
 					<td><button ng-click="copy($index, 'dlink')">Copy</button></td>
 					<td><input type='text' value={{x.hlink}} ng-disabled='true'></td>
