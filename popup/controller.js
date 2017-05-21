@@ -19,14 +19,6 @@ app.controller('control', ['$scope', function($scope){
 		for(var i=0; i<$scope.links.length; i++)$scope.generate(i);
 	}
 	
-	// create a hidden input for copy
-	var body = angular.element(document.body);
-	var textarea = angular.element('<input/>');
-	textarea.css({
-		position: 'fixed',
-		opacity: '0'
-	});
-
 	$scope.prev = function(){
 		if($scope.page == 1){
 			$scope.message = "Already the first page";
@@ -51,6 +43,14 @@ app.controller('control', ['$scope', function($scope){
 			})
 		})
 	}
+
+	// create a hidden input for copy
+	var body = angular.element(document.body);
+	var textarea = angular.element('<textarea/>');
+	textarea.css({
+		position: 'fixed',
+		opacity: '0'
+	});
 	body.append(textarea);
 	
 	// copy links to clipboard
@@ -63,6 +63,27 @@ app.controller('control', ['$scope', function($scope){
 		}
 		textarea[0].select()
 		if(document.execCommand("copy"))$scope.message = "Copy success";
+		else $scope.message = "Copy failure"
+	}
+	$scope.copyAll = function(type){
+		var text = "";
+		for(var i=0; i<$scope.links.length; i++){
+			if(type == 'dlink'){
+				if(!$scope.links[i].dlink)continue
+				text += $scope.links[i].dlink+'\n';
+			}
+			else{
+				if(!$scope.links[i].hlink)continue
+				text += $scope.links[i].hlink+'\n';
+			}
+		}
+		textarea.val(text);
+		if(!textarea.val()){
+			$scope.message = "No links";
+			return;
+		}
+		textarea[0].select()
+		if(document.execCommand("copy"))$scope.message = "Copy all success";
 		else $scope.message = "Copy failure"
 	}
 
