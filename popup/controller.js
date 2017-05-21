@@ -7,16 +7,12 @@ app.controller('control', ['$scope', function($scope){
 	
 	// function to generate high speed link
 	$scope.generate = function(i){
+		console.log(i);
 		$scope.message = "Running...";
 		var x = $scope.links[i];
 		var fs_id = x.fs_id;
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id}, function(response) {
-				$scope.$apply(function(){
-					$scope.links[i].hlink = response;
-					$scope.message = "Ready.";
-				})
-			});
+			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id, index: i});
 		});
 	}
 	$scope.generateAll = function(){
@@ -87,9 +83,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
 		sendResponse('Success');
 	}
 	if(request.type == "passNewLink"){
-		var hlink = request.result;
+		var hlink = request.result.link;
+		var index = request.result.index;
 		$scope.$apply(function(){
-			$scope.links[i].hlink = hlink;
+			$scope.links[index].hlink = hlink;
+			$scope.message = "Ready."
 		})
 	}
 	if(request.type == "error"){

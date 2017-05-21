@@ -100,7 +100,7 @@ $.ajax({// list files in current folder and get their fs_id
 
 
 
-function get_hlink(new_yunData){
+function get_hlink(new_yunData, index){
 	$.ajax({
 		type: "POST",
 		url: "/api/sharedownload?sign="+new_yunData.sign+"&timestamp="+new_yunData.timestamp,
@@ -119,7 +119,7 @@ function get_hlink(new_yunData){
 				return
 			}
 			console.log("Link received");
-			var event = new CustomEvent("passNewLink", {detail: d.list[0].dlink});
+			var event = new CustomEvent("passNewLink", {detail: {link: d.list[0].dlink, index: index}});
 			window.dispatchEvent(event);
 			unshare(new_yunData.shareid)
 		}

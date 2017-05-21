@@ -23,12 +23,7 @@ window.addEventListener('receiveFs', function(req){
 					var code = d.match(/yunData\.setData\(.*\)/);
 					var data = code[0].substring(16, code[0].length-1);
 					var new_yunData = JSON.parse(data);
-					get_hlink(new_yunData, function(link){
-						console.log("Link received");
-						var event = new CustomEvent("passNewLink", {detail: link});
-						window.dispatchEvent(event);
-						unshare(new_yunData.shareid)
-					});
+					get_hlink(new_yunData, req.detail.index);
 				}
 			})
 		}
