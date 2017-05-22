@@ -84,7 +84,7 @@ $.ajax({// list files in current folder and get their fs_id
 		})
 	}
 })
-}else if(url.match(/https?:\/\/pan\.baidu\.com\/s\//)){
+}else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
 	var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
 	get_hlink2(function(link){
 		result.links[0].hlink = link;
@@ -126,10 +126,17 @@ function get_hlink(new_yunData, index){
 	});
 }
 function get_hlink2(cb){
+	var dict = {};
+	var cookies = document.cookie.split(';');
+	cookies.forEach(function(d){
+		var x = d.split('=');
+		dict[x[0]] = x[1];
+	})
+	var extra = JSON.stringify({sekey:decodeURIComponent(dict[" BDCLND"])});
 	$.ajax({
 		type: "POST",
 		url: "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP,
-		data: "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D",
+		data: "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D"+"&extra="+encodeURIComponent(extra),
 		dataType: "json",
 		success: function(d){
 			if(d.errno != 0){
