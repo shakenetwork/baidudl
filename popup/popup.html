@@ -28,6 +28,13 @@
 			</table>
 			<div ng-hide='!status'><button ng-click="prev()">&lt;</button>{{page}}<button ng-click="next()">&gt;</button></div>
 			<p>{{message}}</p>
+			<table id='vcode_table'>
+				<tr ng-repeat="x in vcodes">
+					<td><img ng-src='https://pan.baidu.com/genimage?{{x.vcode_str}}'></td>
+					<td><input type='text' ng-model='vcode_input'></td>
+					<td><button ng-click="verify(x.vcode_str, vcode_input, x.index)">verify</button></td>
+				</tr>
+			</table>
 		</div>
 	</body>
 </html>

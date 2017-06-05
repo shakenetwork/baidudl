@@ -14,6 +14,9 @@ window.addEventListener('error', function(req){
 window.addEventListener('passNewLink', function(req){
 	chrome.runtime.sendMessage({result: req.detail, type: "passNewLink"})
 })
+window.addEventListener('vcode', function(req){
+	chrome.runtime.sendMessage({result: req.detail, type: "vcode"})
+})
 
 // proxy for retrieving high speed link
 chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
@@ -28,5 +31,10 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		var event = new CustomEvent('run', {detail: req});
 		window.dispatchEvent(event);
 		sendResponse('run');
+	}
+	if('vcode' in req){
+		console.log(req);
+		var event = new CustomEvent('verify', {detail: req});
+		window.dispatchEvent(event);
 	}
 })

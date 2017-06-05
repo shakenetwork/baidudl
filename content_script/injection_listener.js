@@ -23,7 +23,12 @@ window.addEventListener('receiveFs', function(req){
 					var code = d.match(/yunData\.setData\(.*\)/);
 					var data = code[0].substring(16, code[0].length-1);
 					var new_yunData = JSON.parse(data);
-					get_hlink(new_yunData, req.detail.index);
+					get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, function(link){
+						console.log("Link received");
+						var event = new CustomEvent("passNewLink", {detail: {link: link, index: req.detail.index}});
+						window.dispatchEvent(event);
+					})
+					unshare(new_yunData.shareid);
 				}
 			})
 		}
@@ -32,4 +37,11 @@ window.addEventListener('receiveFs', function(req){
 
 window.addEventListener('run', function(req){
 	injection(req.detail.page);
+})
+
+window.addEventListener('verify', function(req){
+	get_hlink(yunData, 1, req.detail.vcode, 0, 2, function(link){
+		var event = new CustomEvent("passNewLink", {detail: {link: link, index: req.detail.index}});
+		window.dispatchEvent(event);
+	});
 })

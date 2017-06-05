@@ -62,7 +62,7 @@ $.ajax({// list files in current folder and get their fs_id
 			dict[e.fs_id] = e.path.split('/')[len-1];
 		})
 
-		var fidlist = res.list.map(function(d){return d.fs_id})
+		var fidlist = res.list.map(function(d){return d.fs_id});
 		console.log('Passing links');
 		$.ajax({// retrieve download links of files in current folder
 			type: "POST",
@@ -86,9 +86,11 @@ $.ajax({// list files in current folder and get their fs_id
 })
 }else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
 	var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
-	get_hlink2(function(link){
+	var event = new CustomEvent("passLinks", {detail: result});
+	window.dispatchEvent(event);
+	get_hlink(yunData, 1, undefined, 0, 2, function(link){
 		result.links[0].hlink = link;
-		var event = new CustomEvent("passLinks", {detail: result});
+		var event = new CustomEvent("passNewLinks", {detail: {link: link, index: 0}});
 		window.dispatchEvent(event);
 	});
 }else{
@@ -98,58 +100,44 @@ $.ajax({// list files in current folder and get their fs_id
 }
 }
 
-
-
-function get_hlink(new_yunData, index){
+function get_hlink(yunData, extra, vcode, index, type, cb){
+	if(type == 1){
+		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
+		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid+"&fid_list=%5B"+yunData.file_list.list[0].fs_id+"%5D";
+	}
+	else if(type == 2){
+		var url = "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP;
+		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D";
+	}
+	else return;
+	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
+	if(extra)data += "&extra="+encodeURIComponent(extra);
 	$.ajax({
 		type: "POST",
-		url: "/api/sharedownload?sign="+new_yunData.sign+"&timestamp="+new_yunData.timestamp,
-		data: "encrypt=0&product=share&uk="+new_yunData.uk+"&primaryid="+new_yunData.shareid+"&fid_list=%5B"+new_yunData.file_list.list[0].fs_id+"%5D",
+		url: url,
+		data: data,
 		dataType: "json",
-		success: function(d){
-			if(d.errno != 0){
-				console.log(d);
+		success: function(res){
+			if(res.errno != 0){
+				console.log(res);
 				var err_msg = "Warning: can't get high speed link";
-				if(d.errno == -20){
-					err_msg = "Error: your action is too frequent";
-					unshare(new_yunData.shareid);
+				if(res.errno == -20){
+					get_vcode(function(result){
+						if(result.feedback != 'Success'){
+							var event = new CustomEvent("error", {detail: err_msg});
+							window.dispatchEvent(event);
+							return;
+						}
+						var event = new CustomEvent("vcode", {detail: {vcode: result.vcode, index: index}});
+						window.dispatchEvent(event);
+						return;
+					})
 				}
 				var event = new CustomEvent("error", {detail: err_msg});
 				window.dispatchEvent(event);
-				return
+				return;
 			}
-			console.log("Link received");
-			var event = new CustomEvent("passNewLink", {detail: {link: d.list[0].dlink, index: index}});
-			window.dispatchEvent(event);
-			unshare(new_yunData.shareid)
-		}
-	});
-}
-function get_hlink2(cb){
-	var dict = {};
-	var cookies = document.cookie.split(';');
-	cookies.forEach(function(d){
-		var x = d.split('=');
-		dict[x[0]] = x[1];
-	})
-	var extra = JSON.stringify({sekey:decodeURIComponent(dict[" BDCLND"])});
-	$.ajax({
-		type: "POST",
-		url: "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP,
-		data: "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D"+"&extra="+encodeURIComponent(extra),
-		dataType: "json",
-		success: function(d){
-			if(d.errno != 0){
-				console.log(d);
-				var err_msg = "Warning: can't get high speed link";
-				if(d.errno == -20){
-					err_msg = "Error: your action is too frequent";
-				}
-				var event = new CustomEvent("error", {detail: err_msg});
-				window.dispatchEvent(event);
-				return
-			}
-			cb(d.list[0].dlink);
+			cb(res.list[0].dlink);
 		}
 	});
 }
@@ -170,5 +158,30 @@ function unshare(shareid){
 			console.log("Unshare success");
 		}
 	})
+}
+function get_vcode(cb){
+	$.ajax({
+		type: "GET",
+		url: "/api/getvcode?prod=pan",
+		success: function(res){
+			if(res.errno != 0){
+				var err_msg = "Warning: can't get vcode"
+				var event = new CustomEvent("error", {detail: err_msg})
+				window.dispatchEvent(event);
+				cb({feedback: 'Failure'})
+			}
+			cb({feedback: 'Success', vcode: res.vcode})
+		}
+	})
+}
+function get_extra(){
+	var dict = {};
+	var cookies = document.cookie.split(';');
+	cookies.forEach(function(d){
+		var x = d.split('=');
+		dict[x[0]] = x[1];
+	})
+	var extra = JSON.stringify({sekey:decodeURIComponent(dict[" BDCLND"])});
+	return extra;
 }
 injection(1)

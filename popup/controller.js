@@ -4,8 +4,10 @@ app.controller('control', ['$scope', function($scope){
 	$scope.message = 'pan.baidu.com only';
 	$scope.status = false;
 	$scope.page = 1;
+	$scope.vcodes = [];
+	$scope.vcode_input = "";
 	
-	// function to generate high speed link
+	// function to generate high speed links
 	$scope.generate = function(i){
 		console.log(i);
 		$scope.message = "Running...";
@@ -19,6 +21,7 @@ app.controller('control', ['$scope', function($scope){
 		for(var i=0; i<$scope.links.length; i++)$scope.generate(i);
 	}
 	
+	// pages
 	$scope.prev = function(){
 		if($scope.page == 1){
 			$scope.message = "Already the first page";
@@ -35,6 +38,8 @@ app.controller('control', ['$scope', function($scope){
 		$scope.page += 1;
 		$scope.run();
 	}
+
+	// run
 	$scope.run = function(){
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			var url = tabs[0].url;
@@ -86,34 +91,49 @@ app.controller('control', ['$scope', function($scope){
 		if(document.execCommand("copy"))$scope.message = "Copy all success";
 		else $scope.message = "Copy failure"
 	}
-
+	$scope.verify = function(vcode_str, vcode_input, index){
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index});
+			$scope.$apply(function(){
+				var i = $scope.vcodes.indexOf({vcode_str: vcode_str, index: index});
+				$scope.vcodes.splice(i, 1);
+			});
+		});
+	}
 }])
 
-// add listener to handle received download links
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+// add listener to handle received message
+chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 	var $scope = angular.element(document.getElementById('app')).scope();
-	if(request.type == "passLinks"){
+	if(req.type == "passLinks"){
 		$scope.$apply(function(){
-			if(request.result.feedback != 'Success'){
+			if(req.result.feedback != 'Success'){
 				$scope.message = 'It\'s empty!';
 			}else{
-				$scope.links = request.result.links;
+				$scope.links = req.result.links;
 				$scope.status = true;
 			}
 		});
 		sendResponse('Success');
 	}
-	if(request.type == "passNewLink"){
-		var hlink = request.result.link;
-		var index = request.result.index;
+	if(req.type == "passNewLink"){
+		var hlink = req.result.link;
+		var index = req.result.index;
 		$scope.$apply(function(){
 			$scope.links[index].hlink = hlink;
 			$scope.message = "Ready."
 		})
 	}
-	if(request.type == "error"){
+	if(req.type == "error"){
 		$scope.$apply(function(){
-			$scope.message = request.result;
+			$scope.message = req.result;
+		})
+	}
+
+	if(req.type == "vcode"){
+		$scope.$apply(function(){
+			$scope.vcodes.push({vcode_str: req.result.vcode, index: req.result.index})
+			$scope.message = "vcode required...";
 		})
 	}
 })
