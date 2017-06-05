@@ -105,7 +105,7 @@ app.controller('control', ['$scope', function($scope){
 // add listener to handle received message
 chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 	var $scope = angular.element(document.getElementById('app')).scope();
-	if(req.type == "passLinks"){
+	if(req.type == "dlink"){
 		$scope.$apply(function(){
 			if(req.result.feedback != 'Success'){
 				$scope.message = 'It\'s empty!';
@@ -116,7 +116,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		});
 		sendResponse('Success');
 	}
-	if(req.type == "passNewLink"){
+	if(req.type == "hlink2"){
 		var hlink = req.result.link;
 		var index = req.result.index;
 		$scope.$apply(function(){
@@ -137,6 +137,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		})
 	}
 })
+
 // execute content script
 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 	var url = tabs[0].url;

@@ -4,11 +4,12 @@
 	"name": "baidudl",
 	"short_name": "baidudl",
 	"description": "Extract high speed download links from pan.baidu.com. Github: https://github.com/Kyle-Kyle/baidudl",
-	"version": "0.4.1",
+	"version": "0.4.2",
 
 	"web_accessible_resources": [
 		"content_script/injection_listener.js",
-		"content_script/injection.js"
+		"content_script/injection.js",
+		"content_script/utilities.js"
 	],
 
 	"icons": {

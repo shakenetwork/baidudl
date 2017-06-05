@@ -1,187 +1,58 @@
 function injection(page){
-var url = window.location.href
+	var url = window.location.href
 
-if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home/)){
-console.log("Code Injected");
-// variant base64 encoding function, copy from pan.baidu.com
-function b64(t) {
-	var e, r, a, n, o, i, s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	for (a = t.length,
-	r = 0,
-	e = ""; a > r; ) {
-		if (n = 255 & t.charCodeAt(r++),
-		r == a) {
-			e += s.charAt(n >> 2),
-			e += s.charAt((3 & n) << 4),
-			e += "==";
-		break
-		}
-		if (o = t.charCodeAt(r++),
-		r == a) {
-			e += s.charAt(n >> 2),
-			e += s.charAt((3 & n) << 4 | (240 & o) >> 4),
-			e += s.charAt((15 & o) << 2),
-			e += "=";
-			break
-		}
-		i = t.charCodeAt(r++),
-		e += s.charAt(n >> 2),
-		e += s.charAt((3 & n) << 4 | (240 & o) >> 4),
-		e += s.charAt((15 & o) << 2 | (192 & i) >> 6),
-		e += s.charAt(63 & i)
-	}
-	return e
-};
-u = new Function("return " + yunData.sign2)()
+	if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home/)){
 
-// get sign parameter
-sign = b64(u(yunData.sign5, yunData.sign1));
-sign = encodeURIComponent(sign);
-
-// get path parameter from url
-function getURLParameter(name) {
-	var x = location.hash.split('/');
-	var y = x[x.length-1].split('&')
-	for(var i=0; i<y.length; i++){
-		var e = y[i];
-		e = e.split('=');
-		if(e[0]==name)return e[1];
-	}
-	return null;
-}
-
-// retrieve download links
-console.log('Retrieving links');
-$.ajax({// list files in current folder and get their fs_id
-	url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page="+page,
-	success: function(res){
-		console.log('links retrieved');
-		var dict = {};
-		res.list.forEach(function(e){
-			var len = e.path.split('/').length;
-			dict[e.fs_id] = e.path.split('/')[len-1];
-		})
-
-		var fidlist = res.list.map(function(d){return d.fs_id});
-		console.log('Passing links');
-		$.ajax({// retrieve download links of files in current folder
-			type: "POST",
-			url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
-			success: function(d){
-				if(d.errno!=0)result = {feedback: 'Failure'}
-				else{
-					d.dlink.forEach(function(e){
-						e.path = dict[e.fs_id];
-						e.hlink = "";
-					})
-					result = {feedback: 'Success', links: d.dlink}
+		console.log("Code Injected");
+		
+		// get sign parameter
+		u = new Function("return " + yunData.sign2)()
+		sign = b64(u(yunData.sign5, yunData.sign1));
+		sign = encodeURIComponent(sign);
+		
+		// retrieve download links
+		list_dir(page, function(res){
+			var dict = {};
+			res.list.forEach(function(e){
+				var len = e.path.split('/').length;
+				dict[e.fs_id] = e.path.split('/')[len-1];
+			}) 
+			var fidlist = res.list.map(function(d){return d.fs_id});
+			$.ajax({
+				type: "POST",
+				url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
+				success: function(d){
+					if(d.errno != 0)result = {feedback: 'Failure'}
+					else{
+						d.dlink.forEach(function(e){
+							e.path = dict[e.fs_id];
+							e.hlink = "";
+						})
+						result = {feedback: 'Success', links: d.dlink} 
+					}
+					var event = new CustomEvent("dlink", {detail: result});
+					window.dispatchEvent(event); 
 				}
-
-				// send download links to sandbox
-				var event = new CustomEvent("passLinks", {detail: result});
-				window.dispatchEvent(event);
-			}
+			})
 		})
 	}
-})
-}else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
-	var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
-	var event = new CustomEvent("passLinks", {detail: result});
-	window.dispatchEvent(event);
-	get_hlink(yunData, 1, undefined, 0, 2, function(link){
-		result.links[0].hlink = link;
-		var event = new CustomEvent("passNewLinks", {detail: {link: link, index: 0}});
+	else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
+		var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
+		var event = new CustomEvent("dlink", {detail: result});
 		window.dispatchEvent(event);
-	});
-}else{
-	var err_msg = "home page or share page only";
-	var event = new CustomEvent("error", {detail: err_msg});
-	window.dispatchEvent(event);
-}
+		get_hlink(yunData, 1, undefined, 0, 2, function(link){
+			result.links[0].hlink = link;
+			var event = new CustomEvent("hlink2", {detail: {link: link, index: 0}});
+			window.dispatchEvent(event);
+		});
+	}
+	else{
+		var err_msg = "home page or share page only";
+		var event = new CustomEvent("error", {detail: err_msg});
+		window.dispatchEvent(event);
+	}
 }
 
-function get_hlink(yunData, extra, vcode, index, type, cb){
-	if(type == 1){
-		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
-		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid+"&fid_list=%5B"+yunData.file_list.list[0].fs_id+"%5D";
-	}
-	else if(type == 2){
-		var url = "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP;
-		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D";
-	}
-	else return;
-	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
-	if(extra)data += "&extra="+encodeURIComponent(extra);
-	$.ajax({
-		type: "POST",
-		url: url,
-		data: data,
-		dataType: "json",
-		success: function(res){
-			if(res.errno != 0){
-				console.log(res);
-				var err_msg = "Warning: can't get high speed link";
-				if(res.errno == -20){
-					get_vcode(function(result){
-						if(result.feedback != 'Success'){
-							var event = new CustomEvent("error", {detail: err_msg});
-							window.dispatchEvent(event);
-							return;
-						}
-						var event = new CustomEvent("vcode", {detail: {vcode: result.vcode, index: index}});
-						window.dispatchEvent(event);
-						return;
-					})
-				}
-				var event = new CustomEvent("error", {detail: err_msg});
-				window.dispatchEvent(event);
-				return;
-			}
-			cb(res.list[0].dlink);
-		}
-	});
-}
-function unshare(shareid){
-	$.ajax({
-		type: "POST",
-		url: "/share/cancel?bdstoken="+yunData.MYBDSTOKEN+"&channel=chunlei&web=1&clienttype=0",
-		data: "shareid_list=%5B"+shareid+"%5D",
-		dataType: "json",
-		success: function(d){
-			if(d.errno != 0){
-				console.log(d);
-				var err_msg = "Warning: can't auto unshare the file";
-				var event = new CustomEvent("error", {detail: err_msg});
-				window.dispatchEvent(event);
-				return
-			}
-			console.log("Unshare success");
-		}
-	})
-}
-function get_vcode(cb){
-	$.ajax({
-		type: "GET",
-		url: "/api/getvcode?prod=pan",
-		success: function(res){
-			if(res.errno != 0){
-				var err_msg = "Warning: can't get vcode"
-				var event = new CustomEvent("error", {detail: err_msg})
-				window.dispatchEvent(event);
-				cb({feedback: 'Failure'})
-			}
-			cb({feedback: 'Success', vcode: res.vcode})
-		}
-	})
-}
-function get_extra(){
-	var dict = {};
-	var cookies = document.cookie.split(';');
-	cookies.forEach(function(d){
-		var x = d.split('=');
-		dict[x[0]] = x[1];
-	})
-	var extra = JSON.stringify({sekey:decodeURIComponent(dict[" BDCLND"])});
-	return extra;
-}
-injection(1)
+$(document).ready(function(){
+	injection(1);
+})
