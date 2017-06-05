@@ -12,6 +12,11 @@ function injection(page){
 		
 		// retrieve download links
 		list_dir(page, function(res){
+			if(res.list.length == 0){
+				var event = new CustomEvent("error", {detail: "It's empty!"});
+				window.dispatchEvent(event);
+				return;
+			}
 			var dict = {};
 			res.list.forEach(function(e){
 				var len = e.path.split('/').length;
@@ -22,13 +27,18 @@ function injection(page){
 				type: "POST",
 				url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
 				success: function(d){
-					if(d.errno != 0)result = {feedback: 'Failure'}
+					var err_msg = "Error: can't get dlinks";
+					if(d.errno != 0){
+						var event = new CustomEvent("error", {detail: err_msg});
+						window.dispatchEvent(event);
+						return;
+					}
 					else{
 						d.dlink.forEach(function(e){
 							e.path = dict[e.fs_id];
 							e.hlink = "";
 						})
-						result = {feedback: 'Success', links: d.dlink} 
+						result = {links: d.dlink} 
 					}
 					var event = new CustomEvent("dlink", {detail: result});
 					window.dispatchEvent(event); 
@@ -53,6 +63,4 @@ function injection(page){
 	}
 }
 
-$(document).ready(function(){
-	injection(1);
-})
+injection(1);
