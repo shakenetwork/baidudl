@@ -9,9 +9,9 @@ window.addEventListener('hlink1', function(req){
 				var code = d.match(/yunData\.setData\(.*\)/);
 				var data = code[0].substring(16, code[0].length-1);
 				var new_yunData = JSON.parse(data);
-				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, 0, function(link){
+				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, 0, [new_yunData.file_list.list[0].fs_id], function(link, index){
 					console.log("Link received");
-					var event = new CustomEvent("hlink2", {detail: {link: link, index: req.detail.index}});
+					var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 					window.dispatchEvent(event);
 				})
 				unshare(new_yunData.shareid, function(){});
@@ -26,8 +26,8 @@ window.addEventListener('run', function(req){
 
 window.addEventListener('verify', function(req){
 	var dir = yunData.FILEINFO[0].isdir;
-	get_hlink(yunData, 1, req.detail.vcode, 0, 2, dir, function(link){
-		var event = new CustomEvent("hlink2", {detail: {link: link, index: req.detail.index}});
+	get_hlink(yunData, 1, req.detail.vcode, 0, 2, dir, [yunData.FS_ID], function(link, index){
+		var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 		window.dispatchEvent(event);
 	});
 })

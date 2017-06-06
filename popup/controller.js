@@ -107,7 +107,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 	var $scope = angular.element(document.getElementById('app')).scope();
 	if(req.type == "dlink"){
 		$scope.$apply(function(){
-			$scope.links = req.result.links;
+			$scope.links = req.result;
 			$scope.status = true;
 		});
 		sendResponse('Success');

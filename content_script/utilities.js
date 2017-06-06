@@ -29,19 +29,20 @@ function b64(t) {
 };
 
 // basic function to get hlink
-function get_hlink(yunData, extra, vcode, index, type, dir, cb){
+function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 	if(type == 1){
 		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
-		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid+"&fid_list=%5B"+yunData.file_list.list[0].fs_id+"%5D";
+		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid;
 	}
 	else if(type == 2){
 		var url = "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP;
-		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+"&fid_list=%5B"+yunData.FS_ID+"%5D";
+		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID;
 	}
 	else return;
 	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
 	if(extra)data += "&extra="+encodeURIComponent(get_extra());
-	if(dir)data += "&type=batch"
+	if(dir)data += "&type=batch";
+	data += "&fid_list="+JSON.stringify(fidlist)
 	$.ajax({
 		type: "POST",
 		url: url,
@@ -67,10 +68,40 @@ function get_hlink(yunData, extra, vcode, index, type, dir, cb){
 				window.dispatchEvent(event);
 				return;
 			}
-			if(dir)cb(res.dlink);
-			else cb(res.list[0].dlink);
+			if(dir)cb(res.dlink, index);
+			else cb(res.list[0].dlink, index);
 		}
 	});
+}
+
+function get_dlink(sign, list){
+	var dict = {};
+	list.forEach(function(e){
+		var len = e.path.split('/').length;
+		dict[e.fs_id] = e.path.split('/')[len-1];
+	}) 
+	var fidlist = list.map(function(d){return d.fs_id});
+	$.ajax({
+		type: "POST",
+		url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
+		success: function(d){
+			var err_msg = "Error: can't get dlinks";
+			if(d.errno != 0){
+				var event = new CustomEvent("error", {detail: err_msg});
+				window.dispatchEvent(event);
+				return;
+			}
+			else{
+				d.dlink.forEach(function(e){
+					e.path = dict[e.fs_id];
+					e.hlink = "";
+				})
+				result = d.dlink;
+			}
+			var event = new CustomEvent("dlink", {detail: result});
+			window.dispatchEvent(event); 
+		}
+	})
 }
 
 // get path parameter from url
@@ -157,13 +188,29 @@ function get_extra(){
 }
 
 // list directory
-function list_dir(page, cb){
+function list_dir(type, page, cb){
 	console.log('Retrieving links');
+	if(type == 1)var url = "/api/list?";
+	else if(type == 2)var url = "/share/list?uk="+yunData.SHARE_UK+"&shareid="+yunData.SHARE_ID+"&";
+	else return;
+
+	url += "dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page="+page;
 	$.ajax({
-		url: "/api/list?dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page="+page,
+		url: url,
 		success: function(res){
 			console.log("links retrieved");
-			cb(res);
+			if(res.errno != 0 ){
+				var event = new CustomEvent("error", {detail: "Error: can't list folder"});
+				window.dispatchEvent(event);
+				return;
+			}
+			if(res.list.length == 0){
+				var event = new CustomEvent("error", {detail: "It's empty!"});
+				window.dispatchEvent(event);
+				return;
+			}
+			cb(res.list);
 		}
 	})
 }
+
