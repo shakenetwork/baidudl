@@ -12,7 +12,29 @@ function injection(page){
 		
 		// retrieve download links
 		list_dir(1, page, function(list){
-			get_dlink(sign, list);
+			var dict = {};
+			list.forEach(function(e){
+				var len = e.path.split('/').length;
+				dict[e.fs_id] = e.path.split('/')[len-1];
+			}) 
+			var fidlist = list.map(function(d){return d.fs_id});
+			get_dlink(sign, fidlist, function(links){
+				result = [];
+				for(var i=0; i<links.length; i++){
+					result.push({dlink: links[i].dlink, hlink: "", fs_id: links[i].fs_id, path: dict[links[i].fs_id]});
+					var index = fidlist.indexOf(links[i].fs_id);
+					fidlist.splice(index, 1);
+				}
+				for(var i=0; i<fidlist.length; i++){
+					result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]]});
+					get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(link, index){
+						var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
+						window.dispatchEvent(event);
+					});
+				}
+				var event =  new CustomEvent("dlink", {detail: result});
+				window.dispatchEvent(event);
+			});
 		})
 	}
 	else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){

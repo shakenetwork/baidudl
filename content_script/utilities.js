@@ -38,6 +38,14 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 		var url = "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP;
 		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID;
 	}
+	else if(type == 3){
+		// get sign parameter
+		var u = new Function("return " + yunData.sign2)()
+		var sign = b64(u(yunData.sign5, yunData.sign1));
+		sign = encodeURIComponent(sign);
+		var url = "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN+"&type=batch";
+		var data = "encrypt=0&product=share&type=batch"
+	}
 	else return;
 	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
 	if(extra)data += "&extra="+encodeURIComponent(get_extra());
@@ -74,13 +82,7 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 	});
 }
 
-function get_dlink(sign, list){
-	var dict = {};
-	list.forEach(function(e){
-		var len = e.path.split('/').length;
-		dict[e.fs_id] = e.path.split('/')[len-1];
-	}) 
-	var fidlist = list.map(function(d){return d.fs_id});
+function get_dlink(sign, fidlist, cb){
 	$.ajax({
 		type: "POST",
 		url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
@@ -91,15 +93,7 @@ function get_dlink(sign, list){
 				window.dispatchEvent(event);
 				return;
 			}
-			else{
-				d.dlink.forEach(function(e){
-					e.path = dict[e.fs_id];
-					e.hlink = "";
-				})
-				result = d.dlink;
-			}
-			var event = new CustomEvent("dlink", {detail: result});
-			window.dispatchEvent(event); 
+			cb(d.dlink);
 		}
 	})
 }
