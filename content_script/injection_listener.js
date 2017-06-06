@@ -26,7 +26,7 @@ window.addEventListener('run', function(req){
 
 window.addEventListener('verify', function(req){
 	var dir = yunData.FILEINFO[0].isdir;
-	get_hlink(yunData, 1, req.detail.vcode, 0, 2, dir, [yunData.FS_ID], function(link, index){
+	get_hlink(yunData, 1, req.detail.vcode, req.detail.index, 2, dir, [yunData.FS_ID], function(link, index){
 		var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 		window.dispatchEvent(event);
 	});

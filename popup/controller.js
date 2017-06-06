@@ -95,8 +95,10 @@ app.controller('control', ['$scope', function($scope){
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index});
 			$scope.$apply(function(){
-				var i = $scope.vcodes.indexOf({vcode_str: vcode_str, index: index});
-				$scope.vcodes.splice(i, 1);
+				var vcodes = $scope.vcodes.filter(function(e){
+					return e.vcode_str != vcode_str;
+				})
+				$scope.vcodes = vcodes;
 			});
 		});
 	}
