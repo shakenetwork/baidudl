@@ -29,7 +29,7 @@ function b64(t) {
 };
 
 // basic function to get hlink
-function get_hlink(yunData, extra, vcode, index, type, cb){
+function get_hlink(yunData, extra, vcode, index, type, dir, cb){
 	if(type == 1){
 		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
 		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid+"&fid_list=%5B"+yunData.file_list.list[0].fs_id+"%5D";
@@ -40,7 +40,8 @@ function get_hlink(yunData, extra, vcode, index, type, cb){
 	}
 	else return;
 	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
-	if(extra)data += "&extra="+encodeURIComponent(extra);
+	if(extra)data += "&extra="+encodeURIComponent(get_extra());
+	if(dir)data += "&type=batch"
 	$.ajax({
 		type: "POST",
 		url: url,
@@ -66,7 +67,8 @@ function get_hlink(yunData, extra, vcode, index, type, cb){
 				window.dispatchEvent(event);
 				return;
 			}
-			cb(res.list[0].dlink);
+			if(dir)cb(res.dlink);
+			else cb(res.list[0].dlink);
 		}
 	});
 }

@@ -50,7 +50,8 @@ function injection(page){
 		var result = {feedback: 'Success', links: [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA"}]};
 		var event = new CustomEvent("dlink", {detail: result});
 		window.dispatchEvent(event);
-		get_hlink(yunData, 1, undefined, 0, 2, function(link){
+		var dir = yunData.FILEINFO[0].isdir;
+		get_hlink(yunData, 1, undefined, 0, 2, dir, function(link){
 			result.links[0].hlink = link;
 			var event = new CustomEvent("hlink2", {detail: {link: link, index: 0}});
 			window.dispatchEvent(event);
