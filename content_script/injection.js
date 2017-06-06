@@ -70,5 +70,3 @@ function injection(page){
 		window.dispatchEvent(event);
 	}
 }
-
-injection(1);

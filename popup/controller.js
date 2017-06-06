@@ -6,7 +6,7 @@ app.controller('control', ['$scope', function($scope){
 	$scope.page = 1;
 	$scope.vcodes = [];
 	$scope.vcode_input = "";
-	
+
 	// function to generate high speed links
 	$scope.generate = function(i){
 		console.log(i);
@@ -112,6 +112,9 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 			$scope.links = req.result;
 			$scope.status = true;
 		});
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: new Date(), links: $scope.links, page: $scope.page}})
+		})
 		sendResponse('Success');
 	}
 	if(req.type == "hlink2"){
@@ -120,6 +123,9 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		$scope.$apply(function(){
 			$scope.links[index].hlink = hlink;
 			$scope.message = "Ready."
+		})
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: new Date(), links: $scope.links, page: $scope.page}})
 		})
 	}
 	if(req.type == "error"){
@@ -147,11 +153,11 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			$scope.$apply(function(){$scope.message = "Ready."});
 			chrome.tabs.sendMessage(tabs[0].id, {greeting: "yes"}, function(response) {
 				if(!response){
-					chrome.tabs.executeScript({file: "content_script/sandbox.js"});
-				}else{
-					chrome.tabs.sendMessage(tabs[0].id, {page: $scope.page}, function(res){
-						console.log(res);
+					chrome.tabs.executeScript({file: "content_script/sandbox.js"}, function(){
+						check_storage(tabs, url, 1);
 					})
+				}else{
+					check_storage(tabs, url, $scope.page);
 				}
 			})
 		}
@@ -159,3 +165,23 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		console.log(err);
 	}
 });
+
+function check_storage(tabs, url, page){
+	chrome.storage.local.get('data', function(result){
+		var flag = 0;
+		var data = result.data;
+		console.log(data);
+		if(url != data.url)flag = 1;
+		if(new Date() - data.timestamp > 5*60*1000)flag = 1;
+		if(page != data.page)flag = 1;
+		if(flag == 1)chrome.tabs.sendMessage(tabs[0].id, {page: page});
+		else{
+			var $scope = angular.element(document.getElementById('app')).scope();
+			$scope.$apply(function(){
+				console.log(data.links);
+				$scope.links = data.links;
+				$scope.status = true;
+			});
+		}
+	});
+}
