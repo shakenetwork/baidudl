@@ -179,10 +179,12 @@ function check_storage(tabs, url, page){
 		if(flag == 1)chrome.tabs.sendMessage(tabs[0].id, {page: page});
 		else{
 			var $scope = angular.element(document.getElementById('app')).scope();
-			$scope.$apply(function(){
-				$scope.links = data.links;
-				$scope.status = true;
-			});
+			setTimeout(function(){
+				$scope.$apply(function(){
+					$scope.status = true;
+					$scope.links = data.links;
+				})
+			}, 300)
 		}
 	});
 }
