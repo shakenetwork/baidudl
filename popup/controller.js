@@ -13,12 +13,15 @@ app.controller('control', ['$scope', function($scope){
 		$scope.message = "Running...";
 		var x = $scope.links[i];
 		var fs_id = x.fs_id;
+		var isdir = x.isdir;
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id, index: i});
+			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id, index: i, isdir: isdir});
 		});
 	}
 	$scope.generateAll = function(){
-		for(var i=0; i<$scope.links.length; i++)$scope.generate(i);
+		for(var i=0; i<$scope.links.length; i++){
+			if(!$scope.links[i].hlink)$scope.generate(i);
+		}
 	}
 	
 	// pages
@@ -170,7 +173,6 @@ function check_storage(tabs, url, page){
 	chrome.storage.local.get('data', function(result){
 		var flag = 0;
 		var data = result.data;
-		console.log(data);
 		if(url != data.url)flag = 1;
 		if(new Date() - data.timestamp > 5*60*1000)flag = 1;
 		if(page != data.page)flag = 1;
@@ -178,7 +180,6 @@ function check_storage(tabs, url, page){
 		else{
 			var $scope = angular.element(document.getElementById('app')).scope();
 			$scope.$apply(function(){
-				console.log(data.links);
 				$scope.links = data.links;
 				$scope.status = true;
 			});

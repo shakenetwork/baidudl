@@ -21,12 +21,12 @@ function injection(page){
 			get_dlink(sign, fidlist, function(links){
 				result = [];
 				for(var i=0; i<links.length; i++){
-					result.push({dlink: links[i].dlink, hlink: "", fs_id: links[i].fs_id, path: dict[links[i].fs_id]});
+					result.push({dlink: links[i].dlink, hlink: "", fs_id: links[i].fs_id, path: dict[links[i].fs_id], isdir: 0});
 					var index = fidlist.indexOf(links[i].fs_id);
 					fidlist.splice(index, 1);
 				}
 				for(var i=0; i<fidlist.length; i++){
-					result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]]});
+					result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]], isdir: 1});
 					get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(link, index){
 						var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
 						window.dispatchEvent(event);

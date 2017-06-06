@@ -1,6 +1,7 @@
 // retrieve high speed link
 window.addEventListener('hlink1', function(req){
 	var fs_id = req.detail.fs_id;
+	var isdir = req.detail.isdir;
 	share(fs_id, function(res){
 		var shareid = res.shareid;
 		$.ajax({
@@ -9,7 +10,7 @@ window.addEventListener('hlink1', function(req){
 				var code = d.match(/yunData\.setData\(.*\)/);
 				var data = code[0].substring(16, code[0].length-1);
 				var new_yunData = JSON.parse(data);
-				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, 0, [new_yunData.file_list.list[0].fs_id], function(link, index){
+				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, isdir, [new_yunData.file_list.list[0].fs_id], function(link, index){
 					console.log("Link received");
 					var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 					window.dispatchEvent(event);

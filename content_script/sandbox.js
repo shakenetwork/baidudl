@@ -21,7 +21,7 @@ window.addEventListener('vcode', function(req){
 
 // proxy for retrieving high speed link
 chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
-	if('fs_id' in req && 'index' in req){
+	if('fs_id' in req && 'index' in req && 'isdir' in req){
 		var event = new CustomEvent("hlink1", {detail: req});
 		window.dispatchEvent(event);
 	}
