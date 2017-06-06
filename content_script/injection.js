@@ -44,7 +44,6 @@ function injection(page){
 			var event = new CustomEvent("dlink", {detail: result});
 			window.dispatchEvent(event);
 			get_hlink(yunData, 1, undefined, 0, 2, dir, [yunData.FS_ID], function(link, index){
-				result.links[0].hlink = link;
 				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 				window.dispatchEvent(event);
 			});
@@ -58,7 +57,7 @@ function injection(page){
 				console.log(list);
 				for(var i=0; i<links.length; i++){
 					get_hlink(yunData, 1, undefined, i, 2, 0, [links[i].fs_id], function(link, index){
-						var event = new CustomeEvent("hlink2", {detail: {link: link, index: index}});
+						var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
 						window.dispatchEvent(event);
 					})
 				}
