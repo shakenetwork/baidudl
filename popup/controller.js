@@ -116,7 +116,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 			$scope.status = true;
 		});
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: new Date(), links: $scope.links, page: $scope.page}})
+			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
 		})
 		sendResponse('Success');
 	}
@@ -128,7 +128,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 			$scope.message = "Ready."
 		})
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: new Date(), links: $scope.links, page: $scope.page}})
+			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
 		})
 	}
 	if(req.type == "error"){
@@ -172,10 +172,18 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 function check_storage(tabs, url, page){
 	chrome.storage.local.get('data', function(result){
 		var flag = 0;
-		var data = result.data;
-		if(url != data.url)flag = 1;
-		if(new Date() - data.timestamp > 5*60*1000)flag = 1;
-		if(page != data.page)flag = 1;
+		var data;
+		if('data' in result){
+			data = result.data;
+		}
+		else{
+			flag = 1;
+			data = {}
+		}
+		if(!data)flag=1;
+		if('url' in data && url != data.url)flag = 1;
+		if('timestamp' in data && Number(new Date()) - data.timestamp > 5*60*1000)flag = 1;
+		if('page' in data && page != data.page)flag = 1;
 		if(flag == 1)chrome.tabs.sendMessage(tabs[0].id, {page: page});
 		else{
 			var $scope = angular.element(document.getElementById('app')).scope();
