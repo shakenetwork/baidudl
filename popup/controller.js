@@ -1,6 +1,6 @@
-// initialize angular model
 var app = angular.module('app', []);
 app.controller('control', ['$scope', function($scope){
+	// initialize angular model
 	$scope.message = 'pan.baidu.com only';
 	$scope.status = false;
 	$scope.page = 1;
@@ -18,13 +18,14 @@ app.controller('control', ['$scope', function($scope){
 			chrome.tabs.sendMessage(tabs[0].id, {fs_id: fs_id, index: i, isdir: isdir});
 		});
 	}
+	// generate hlinks for all files
 	$scope.generateAll = function(){
 		for(var i=0; i<$scope.links.length; i++){
 			if(!$scope.links[i].hlink)$scope.generate(i);
 		}
 	}
 	
-	// pages
+	// previous page
 	$scope.prev = function(){
 		if($scope.page == 1){
 			$scope.message = "Already the first page";
@@ -33,6 +34,7 @@ app.controller('control', ['$scope', function($scope){
 		$scope.page -= 1;
 		$scope.run();
 	}
+	// next page
 	$scope.next = function(){
 		if($scope.links.length < 100){
 			$scope.message = "Already the last page";
@@ -94,6 +96,8 @@ app.controller('control', ['$scope', function($scope){
 		if(document.execCommand("copy"))$scope.message = "Copy all success";
 		else $scope.message = "Copy failure"
 	}
+
+	// do vcode verification
 	$scope.verify = function(vcode_str, vcode_input, index){
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index});

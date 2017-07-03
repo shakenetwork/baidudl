@@ -9,12 +9,17 @@ window.addEventListener('dlink', function(req){
 	chrome.runtime.sendMessage({result: req.detail, type: "dlink"})
 })
 
+// send error message to popup
 window.addEventListener('error', function(req){
 	chrome.runtime.sendMessage({result: req.detail, type: "error"})
 })
+
+// receive hlink from sandbox and send it to popup
 window.addEventListener('hlink2', function(req){
 	chrome.runtime.sendMessage({result: req.detail, type: "hlink2"})
 })
+
+// receive vcode information to sandbox and request verification
 window.addEventListener('vcode', function(req){
 	chrome.runtime.sendMessage({result: req.detail, type: "vcode"})
 })

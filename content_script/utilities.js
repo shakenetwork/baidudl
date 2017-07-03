@@ -1,4 +1,5 @@
 // variant base64 encoding function, copy from pan.baidu.com
+// I don't understand it. But we don't have to.
 function b64(t) {
 	var e, r, a, n, o, i, s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	for (a = t.length,
@@ -30,6 +31,16 @@ function b64(t) {
 
 // basic function to get hlink
 function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
+	/*
+	 * 	Parameters:
+	 * 		yunData:	which yunData to use
+	 * 		extra:		whether extra encryption needed
+	 * 		vcode:		verification code information
+	 * 		index:		what the index of this file in popup is
+	 * 		type:		which type of information to use
+	 * 		dir:		whether this file is a directory
+	 * 		fidlist:	whose hlink you want to get
+	 * */
 	if(type == 1){
 		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
 		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid;
@@ -47,42 +58,65 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 		var data = "encrypt=0&product=share&type=batch"
 	}
 	else return;
+
+	// additional information
 	if(vcode)data += "&vcode_str="+vcode.vcode_str+"&vcode_input="+vcode.vcode_input;
 	if(extra)data += "&extra="+encodeURIComponent(get_extra());
 	if(dir)data += "&type=batch";
-	data += "&fid_list="+JSON.stringify(fidlist)
+	data += "&fid_list="+JSON.stringify(fidlist);
+
+	// get hlink
 	$.ajax({
 		type: "POST",
 		url: url,
 		data: data,
 		dataType: "json",
 		success: function(res){
+
+			// in case of failure
 			if(res.errno != 0){
 				console.log(res);
 				var err_msg = "Warning: can't get high speed link";
+
+				// -20 means verification is needed
 				if(res.errno == -20){
+
+					// get verification image
 					get_vcode(function(result){
+
+						// in case that it fails to get verification image, return an error message
 						if(result.feedback != 'Success'){
 							var event = new CustomEvent("error", {detail: err_msg});
 							window.dispatchEvent(event);
 							return;
 						}
+
+						// now we have got verification image, send it to popup
 						var event = new CustomEvent("vcode", {detail: {vcode: result.vcode, index: index}});
 						window.dispatchEvent(event);
 						return;
 					})
 				}
+
+				// other errors
 				var event = new CustomEvent("error", {detail: err_msg});
 				window.dispatchEvent(event);
 				return;
 			}
+			// now we have got hlink
 			if(dir)cb(res.dlink, index);
 			else cb(res.list[0].dlink, index);
 		}
 	});
 }
 
+// get dlink by sign and fidlist
 function get_dlink(sign, fidlist, cb){
+	/*
+	 *	Parameters:
+	 *		sign: verification parameters
+	 *		fidlist: whose dlink you want to get
+	  */
 	$.ajax({
 		type: "POST",
 		url: "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN,
@@ -110,6 +144,7 @@ function getURLParameter(name) {
 	return null;
 }
 
+// share file by fs_id
 function share(fs_id, cb){
 	$.ajax({
 		type: "POST",
@@ -131,7 +166,7 @@ function share(fs_id, cb){
 	})
 }
 
-// unshare a file
+// unshare a file by its shareid
 function unshare(shareid, cb){
 	$.ajax({
 		type: "POST",
@@ -183,21 +218,34 @@ function get_extra(){
 
 // list directory
 function list_dir(type, page, cb){
+	/*
+	 * Parameters:
+	 * 	type: list directory in homepage or list dirctory in shared page
+	 * 	page: which page to display
+	  */
 	console.log('Retrieving links');
+
+	// decide which url to use to list directory
 	if(type == 1)var url = "/api/list?";
 	else if(type == 2)var url = "/share/list?uk="+yunData.SHARE_UK+"&shareid="+yunData.SHARE_ID+"&";
 	else return;
 
+	// append parameters
 	url += "dir="+getURLParameter('path')+"&bdstoken="+yunData.MYBDSTOKEN+"&num=100&order=time&desc=1&clienttype=0&showempty=0&web=1&page="+page;
+
+	// start to list directory
 	$.ajax({
 		url: url,
 		success: function(res){
 			console.log("links retrieved");
+
+			// if error is encountered
 			if(res.errno != 0 ){
 				var event = new CustomEvent("error", {detail: "Error: can't list folder"});
 				window.dispatchEvent(event);
 				return;
 			}
+			// good, we make it
 			if(res.list.length == 0){
 				var event = new CustomEvent("error", {detail: "It's empty!"});
 				window.dispatchEvent(event);
