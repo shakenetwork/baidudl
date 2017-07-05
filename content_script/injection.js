@@ -58,7 +58,7 @@ function injection(page){
 		var dir = yunData.FILEINFO[0].isdir;
 
 		// logic for non-directory share files
-		if(dir == 0 || getURLParameter('path') == "%2F"){
+		if(dir == 0 || getURLParameter('path') == "%2F" || !getURLParameter('path')){
 
 			// dispatch general information
 			var result = [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA", isdir: dir}];

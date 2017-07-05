@@ -241,6 +241,7 @@ function list_dir(type, page, cb){
 
 			// if error is encountered
 			if(res.errno != 0 ){
+				console.log(res);
 				var event = new CustomEvent("error", {detail: "Error: can't list folder"});
 				window.dispatchEvent(event);
 				return;
