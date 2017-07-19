@@ -55,7 +55,7 @@ function injection(page){
 	}
 	// logic for share pages
 	else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
-		var dir = yunData.FILEINFO[0].isdir;
+		var dir = yunData.FILEINFO.length ? yunData.FILEINFO[0].isdir : 0;
 
 		// logic for non-directory share files
 		if(dir == 0 || getURLParameter('path') == "%2F" || !getURLParameter('path')){

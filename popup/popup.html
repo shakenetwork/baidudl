@@ -16,6 +16,7 @@
 					<td>Hlinks</td>
 					<td><button ng-click="generateAll()">GenerateAll</button></td>
 					<td><button ng-click="copyAll('hlink')">CopyAll</button></td>
+					<td><button ng-click="clear()">clearCache</td>
 				</tr>
 				<tr ng-repeat="x in links">
 					<td><input style="width: 300px" type='text' value={{x.path}} ng-disabled='true'></td>

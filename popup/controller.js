@@ -109,6 +109,10 @@ app.controller('control', ['$scope', function($scope){
 			});
 		});
 	}
+
+	$scope.clear = function(){
+		chrome.storage.local.remove('data')
+	}
 }])
 
 // add listener to handle received message
