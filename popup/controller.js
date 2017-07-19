@@ -99,8 +99,9 @@ app.controller('control', ['$scope', function($scope){
 
 	// do vcode verification
 	$scope.verify = function(vcode_str, vcode_input, index){
+		var x = $scope.links[index];
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index});
+			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index, fs_id: x.fs_id, isdir: x.isdir});
 			$scope.$apply(function(){
 				var vcodes = $scope.vcodes.filter(function(e){
 					return e.vcode_str != vcode_str;
@@ -111,7 +112,8 @@ app.controller('control', ['$scope', function($scope){
 	}
 
 	$scope.clear = function(){
-		chrome.storage.local.remove('data')
+		chrome.storage.local.remove('data');
+		$scope.message = "Cache is cleared";
 	}
 }])
 
