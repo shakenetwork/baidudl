@@ -1,11 +1,19 @@
 var app = angular.module('app', []);
-app.controller('control', ['$scope', function($scope){
+app.controller('control', function($scope, $http){
 	// initialize angular model
 	$scope.message = 'pan.baidu.com only';
 	$scope.status = false;
 	$scope.page = 1;
 	$scope.vcodes = [];
 	$scope.vcode_input = "";
+	$scope.bduss;
+
+	chrome.cookies.get({url: 'https://pan.baidu.com/', name: 'BDUSS'}, function(cookie){
+		$scope.$apply(function(){
+			$scope.bduss = cookie.value;
+			console.log($scope.bduss);
+		})
+	})
 
 	// function to generate high speed links
 	$scope.generate = function(i){
@@ -115,7 +123,20 @@ app.controller('control', ['$scope', function($scope){
 		chrome.storage.local.remove('data');
 		$scope.message = "Cache is cleared";
 	}
-}])
+
+	$scope.download = function(index){
+		if(!$scope.links[index].hlink){
+			$scope.message = 'hlink is not generated';
+			return;
+		}
+		$http.get('http://127.0.0.1:8333/rpc?link='+btoa($scope.links[index].hlink)+'&bduss='+$scope.bduss)
+		.then(function(res){
+			$scope.message = 'done';
+		}, function(res){
+			$scope.message = 'fail to download';
+		});
+	}
+})
 
 // add listener to handle received message
 chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
