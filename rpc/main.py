@@ -4,6 +4,7 @@ import base64
 import os
 import json
 import socket
+import time
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -59,7 +60,9 @@ def main():
         return '1'
 
 
-    print 'This download is at speed: %s' % parsed_query['csl'][0]
+    print 'This download will be at speed: %s' % parsed_query['csl'][0]
+
+    time.sleep(2)
 
     # generate urls according to domains
     urls = []
@@ -71,7 +74,6 @@ def main():
             replaced = replaced._replace(scheme='http')
         url = urlparse.urlunparse(replaced)
         urls.append(url)
-        print url
 
     # save temperary download links
     f = open('tmp_urls.txt', 'w')
@@ -92,4 +94,5 @@ def url_transform(link):
     return url
 
 if __name__ == '__main__':
+    print ' * baidudl_rpc is running'
     app.run(host='127.0.0.1', port=8333, threaded=True)

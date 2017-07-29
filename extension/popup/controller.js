@@ -131,9 +131,9 @@ app.controller('control', function($scope, $http){
 		}
 		$http.get('http://127.0.0.1:8333/rpc?link='+btoa($scope.links[index].hlink)+'&bduss='+$scope.bduss)
 		.then(function(res){
-			$scope.message = 'done';
+			$scope.message = 'Done';
 		}, function(res){
-			$scope.message = 'fail to download';
+			$scope.message = 'Fail to download. Make sure `aria2` is installed and `baidudl_rpc` is running';
 		});
 	}
 })
