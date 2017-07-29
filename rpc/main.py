@@ -16,7 +16,7 @@ directory = '/Users/Kyle/Downloads'
 #https://d.pcs.baidu.com/rest/2.0/pcs/file?vip=1&app_id=250528&method=locatedownload&path=%2Ftest.mkv&ver=4.0
 
 @app.route('/rpc', methods=['GET'])
-def main():
+def main(count=0):
 
     # wrong request
     if 'link' not in request.args or not request.args['link']:
@@ -26,13 +26,12 @@ def main():
     global domains
     global directory
 
-    # in case that no bduss is passed
-    if 'bduss' not in request.args or not request.args['bduss']:
-        # catch true url
-        r = requests.get(link, allow_redirects=False)
-        url = r.headers['Location']
-        
-    else:
+    # catch true url
+    r = requests.get(link, allow_redirects=False)
+    url = r.headers['Location']
+
+    # expand domain
+    if 'bduss' in request.args and request.args['bduss']:
         # transfrom proxy link to api link
         link = url_transform(link)
 
@@ -49,14 +48,17 @@ def main():
         domains += list(s2-s1)
 
     # parse url
-    url = urls[0]
     parsed_url = urlparse.urlparse(url)
     parsed_query = urlparse.parse_qs(parsed_url.query)
 
     # make sure speed is not highly limited
     if int(parsed_query['csl'][0]) <= 10:
-        print 'Speed limited. Trying again...'
-        main()
+        count += 1
+        print 'Speed limited. Trying again...%d times' % count
+        if count <= 10:
+            main(count)
+        else:
+            print 'Your account is stricly banned. Please download in share page in Incognito mode.'
         return '1'
 
 
