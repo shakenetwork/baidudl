@@ -78,11 +78,9 @@ function injection(page){
 			list_dir(2, 1, function(list){
 
 				// dispatch general information
-				links = list.map(function(e){return {fs_id: e.fs_id, dlink: "NA", hlink: "", path: e.path, isdir: dir}});
+				links = list.map(function(e){return {fs_id: e.fs_id, dlink: "NA", hlink: "", path: e.path, isdir: e.isdir}});
 				var event = new CustomEvent("dlink", {detail: links});
 				window.dispatchEvent(event);
-
-				console.log(list);
 
 				// get hlink for each file and dispatch it
 				for(var i=0; i<links.length; i++){

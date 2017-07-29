@@ -1,9 +1,16 @@
-// inject function, inject core.js to pan.baidu.com
 console.log('Injecting code');
-$.getScript(chrome.extension.getURL('/resource/jquery.cookie.js'));
-$.getScript(chrome.extension.getURL('/content_script/utilities.js'));
-$.getScript(chrome.extension.getURL('/content_script/injection.js'));
-$.getScript(chrome.extension.getURL('/content_script/injection_listener.js'));
+$.getScript(chrome.extension.getURL('/resource/jquery.cookie.js'), function(){
+	console.log('jquery.cookie.js is loaded');
+});
+$.getScript(chrome.extension.getURL('/content_script/utilities.js'), function(){
+	console.log('utilities.js is loaded');
+});
+$.getScript(chrome.extension.getURL('/content_script/injection.js'), function(){
+	console.log('injection.js is loaded');
+});
+$.getScript(chrome.extension.getURL('/content_script/injection_listener.js'), function(){
+	console.log('injection_listener.js is loaded');
+});
 
 // receive download links from web and send them to popup
 window.addEventListener('dlink', function(req){
