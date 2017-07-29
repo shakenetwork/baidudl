@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 import urlparse
 import base64
@@ -5,6 +6,7 @@ import os
 import json
 import socket
 import time
+from HTMLParser import HTMLParser
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -12,6 +14,8 @@ app = Flask(__name__)
 # configuration
 domains = open('servers.txt').read().split('\n')[:-1]
 directory = '/Users/Kyle/Downloads'
+max_threads = 164
+h = HTMLParser()
 #https://d.pcs.baidu.com/rest/2.0/pcs/file?time=1501250608&version=2.2.0&vip=1&path=c681b5d6e90801ecf79c94f20e9a1831&fid=3892570184-250528-580625127441539&rt=sh&sign=FDTAERV-DCb740ccc5511e5e8fedcff06b081203-cxeW9Xee1lTRtcZVHG%2FYm6KV73g%3D&expires=8h&chkv=1&method=locatedownload&app_id=250528&esl=1&ver=4.0
 #https://d.pcs.baidu.com/rest/2.0/pcs/file?vip=1&app_id=250528&method=locatedownload&path=%2Ftest.mkv&ver=4.0
 
@@ -22,22 +26,19 @@ def main(count=0):
     if 'link' not in request.args or not request.args['link']:
         return '0'
     
+    # initialization
     link = base64.b64decode(request.args['link'])
     global domains
     global directory
 
-    # catch true url
-    r = requests.get(link, allow_redirects=False)
-    url = r.headers['Location']
-
     # expand domain
     if 'bduss' in request.args and request.args['bduss']:
         # transfrom proxy link to api link
-        link = url_transform(link)
+        link2 = url_transform(link)
 
         # retrieve all download links
         header = {'User-Agent': 'netdisk;2.2.0;macbaiduyunguanjia'}
-        r = requests.get(link, headers=header, cookies={'BDUSS': request.args['bduss']})
+        r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']})
         res = json.loads(r.content)
 
         # update recorded domains
@@ -46,6 +47,11 @@ def main(count=0):
         s1 = set(domains)
         s2 = set(new_domains)
         domains += list(s2-s1)
+
+    # catch true url
+    r = requests.get(link, allow_redirects=False)
+    url = r.headers['Location']
+
 
     # parse url
     parsed_url = urlparse.urlparse(url)
@@ -70,7 +76,6 @@ def main(count=0):
     urls = []
     #parsed_url = parsed_url._replace(scheme='http')
     for domain in domains:
-        #ip = socket.gethostbyname(domain)
         replaced = parsed_url._replace(netloc=domain)
         if 'cache' in domain:
             replaced = replaced._replace(scheme='http')
@@ -79,12 +84,14 @@ def main(count=0):
 
     # save temperary download links
     f = open('tmp_urls.txt', 'w')
-    f.write('\t'.join(urls))
+    f.write('\t'.join(urls).encode('utf-8'))
     f.close()
 
     # launch aria2
-    os.system('aria2c -i tmp_urls.txt -k 1m -s %d -x 16 -d %s --console-log-level=error -U "netdisk;2.2.0;macbaiduyunguanjia" --check-certificate=false' % (16*len(urls), directory))
-
+    threads = max_threads if (16*len(urls) > max_threads) else 16*len(urls)
+    cmd = 'aria2c -i tmp_urls.txt -k 1m -s %d -x 16 -d %s --console-log-level=error -U "netdisk;2.2.0;macbaiduyunguanjia" --check-certificate=false' % (threads, directory)
+    print cmd
+    os.system(cmd)
 
     return '1'
 

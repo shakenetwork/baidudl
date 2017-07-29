@@ -1,5 +1,6 @@
 // inject function, inject core.js to pan.baidu.com
 console.log('Injecting code');
+$.getScript(chrome.extension.getURL('/resource/jquery.cookie.js'));
 $.getScript(chrome.extension.getURL('/content_script/utilities.js'));
 $.getScript(chrome.extension.getURL('/content_script/injection.js'));
 $.getScript(chrome.extension.getURL('/content_script/injection_listener.js'));

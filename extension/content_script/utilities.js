@@ -41,6 +41,11 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 	 * 		dir:		whether this file is a directory
 	 * 		fidlist:	whose hlink you want to get
 	 * */
+
+	BAIDUID = $.cookie('BAIDUID')
+	BDCLND = $.cookie('BDCLND')
+	$.removeCookie('BAIDUID')
+	$.removeCookie('BDCLND')
 	if(type == 1){
 		var url = "/api/sharedownload?sign="+yunData.sign+"&timestamp="+yunData.timestamp;
 		var data = "encrypt=0&product=share&uk="+yunData.uk+"&primaryid="+yunData.shareid;
@@ -108,6 +113,8 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 			else cb(res.list[0].dlink, index);
 		}
 	});
+	$.cookie('BAIDUID', BAIDUID)
+	$.cookie('BDCLND', BDCLND)
 }
 
 // get dlink by sign and fidlist

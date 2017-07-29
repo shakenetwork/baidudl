@@ -10,8 +10,7 @@ app.controller('control', function($scope, $http){
 
 	chrome.cookies.get({url: 'https://pan.baidu.com/', name: 'BDUSS'}, function(cookie){
 		$scope.$apply(function(){
-			$scope.bduss = cookie.value;
-			console.log($scope.bduss);
+			$scope.bduss = cookie? cookie.value: '';
 		})
 	})
 
