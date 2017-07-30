@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/local/bin/python
 import requests
 import subprocess
 import urlparse
@@ -14,6 +14,11 @@ from threading import Thread
 from HTMLParser import HTMLParser
 from flask import Flask, request
 
+# for compiling
+#addr = sys.argv[0]
+#cwd = os.path.realpath(os.path.join(addr, '..'))
+#os.chdir(cwd)
+
 app = Flask(__name__)
 
 # configuration
@@ -26,7 +31,7 @@ for option in config.options('SectionOne'):
 configs['max_threads'] = int(configs['max_threads'])
 configs['directory'] = configs['directory'].strip('\"')
 if not configs['directory']:
-    print colored('You should fill `Contents/resources/config.txt` first', 'red')
+    print colored('You should fill `config.txt` first', 'red')
     print 'exiting...'
     sys.exit(-1)
 
