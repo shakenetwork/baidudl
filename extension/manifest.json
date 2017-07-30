@@ -36,6 +36,8 @@
 		"storage",
 		"http://127.0.0.1:8333/",
 		"https://pan.baidu.com/",
-		"cookies"
+		"cookies",
+		"https://d.pcs.baidu.com/",
+		"webRequest"
 	]
 }
