@@ -26,7 +26,7 @@
 					<td><input style="width: 50px"type='text' value={{x.hlink}} ng-disabled='true'></td>
 					<td><button ng-click="generate($index)">Generate</button></td>
 					<td><button ng-click="copy($index, 'hlink')">Copy</button></td>
-					<td><button ng-click="download($index)">RPCDownload</td>
+					<td><button ng-click="download($index)" ng-hide='x.isdir'>RPCDownload</td>
 				</tr>
 			</table>
 			<div ng-hide='!status'><button ng-click="prev()">&lt;</button>{{page}}<button ng-click="next()">&gt;</button></div>
