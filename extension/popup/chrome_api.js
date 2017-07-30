@@ -36,12 +36,24 @@ chrome.webRequest.onHeadersReceived.addListener(
 	{urls: ["https://d.pcs.baidu.com/file/*", "http://d.pcs.baidu.com/file/*"]},
 	['responseHeaders']
 )
-chrome.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeSendHeaders.addListener(
 	function(details){
-		console.log(details);
+		var headers = details.requestHeaders;
+		var index = -1;
+		for(var i=0; i<headers.length; i++){
+			if(headers[i].name == 'Cookie'){
+				index = i;
+				break;
+			}
+		}
+		if(index >= 0){
+			headers.splice(index, 1)
+		}
+
+		return {'requestHeaders': headers}
 	},
-	{urls: ['<all_urls>']},
-	['requestBody']
+	{urls: ["https://d.pcs.baidu.com/file/*", "http://d.pcs.baidu.com/file/*"]},
+	['blocking', 'requestHeaders']
 )
 
 // add listener to handle received message
