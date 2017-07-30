@@ -110,13 +110,15 @@ def main(count=0):
     options['check-certificate'] = 'false'
     options['dir'] = directory
     options['min-split-size'] = '1m'
+    options['summary-interal'] = '0'
+    options['out'] = parsed_query['fin'][0]
     params = []
     params.append('token:baidudl')
     params.append(urls)
     params.append(options)
     jsonreq = {}
     jsonreq['jsonrpc'] = '2.0'
-    jsonreq['id'] = parsed_query['fin']
+    jsonreq['id'] = parsed_query['fin'][0]
     jsonreq['method'] = 'aria2.addUri'
     jsonreq['params'] = params
 
