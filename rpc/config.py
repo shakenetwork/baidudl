@@ -1,2 +1,2 @@
-directory = '/Users/Kyle/Downloads'
+directory = ''
 max_threads= 164

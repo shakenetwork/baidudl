@@ -7,6 +7,7 @@ import os
 import json
 import socket
 import time
+import signal
 from threading import Thread
 from HTMLParser import HTMLParser
 from flask import Flask, request
@@ -17,11 +18,15 @@ app = Flask(__name__)
 domains = open('servers.txt').read().split('\n')[:-1]
 import config as cfg
 directory = cfg.directory
+if not directory:
+    print 'You should fill `config.py` first'
+    print 'exiting...'
+    exit(1)
 max_threads = cfg.max_threads
 h = HTMLParser()
 
 # launch aria2 rpc
-subprocess.Popen(['aria2c', '--enable-rpc', '--rpc-listen-port=6800', '--console-log-level=warn', '--rpc-secret=baidudl', '--rpc-allow-origin-all=true', '--rpc-listen-all=true'])
+aria2_rpc = subprocess.Popen(['aria2c', '--enable-rpc', '--rpc-listen-port=6800', '--console-log-level=warn', '--rpc-secret=baidudl', '--rpc-allow-origin-all=true', '--rpc-listen-all=true'])
 
 @app.route('/rpc', methods=['GET'])
 def main(count=0):
@@ -59,7 +64,6 @@ def main(count=0):
     r = requests.get(link, allow_redirects=False)
     url = r.headers['Location']
 
-
     # parse url
     parsed_url = urlparse.urlparse(url)
     parsed_query = urlparse.parse_qs(parsed_url.query)
@@ -77,10 +81,11 @@ def main(count=0):
 
     print 'This download will be at speed: %s' % parsed_query['csl'][0]
 
-    time.sleep(2)
+    time.sleep(1)
 
     # generate urls according to domains
     urls = []
+
     #parsed_url = parsed_url._replace(scheme='http')
     for domain in domains:
         replaced = parsed_url._replace(netloc=domain)
@@ -105,7 +110,6 @@ def main(count=0):
     options['check-certificate'] = 'false'
     options['dir'] = directory
     options['min-split-size'] = '1m'
-    options['summary-interval'] = '0'
     params = []
     params.append('token:baidudl')
     params.append(urls)
@@ -129,6 +133,16 @@ def url_transform(link):
     url = 'https://d.pcs.baidu.com/rest/2.0/pcs/file?time=%s&version=2.2.0&vip=1&path=%s&fid=%s&rt=sh&sign=%s&expires=8h&chkv=1&method=locatedownload&app_id=250528&esl=0&ver=4.0' % (parsed_query['time'][0], parsed_url.path.split('/')[2], parsed_query['fid'][0], parsed_query['sign'][0])
     return url
 
+# catch interupt signal
+def signal_handler(signal, frame):
+    print 'exiting...'
+    aria2_rpc.terminate()
+    aria2_rpc.wait()
+    exit(1)
+signal.signal(signal.SIGINT, signal_handler)
+
 if __name__ == '__main__':
     print ' * baidudl_rpc is running'
-    app.run(host='127.0.0.1', port=8333, threaded=True)
+    from gevent.wsgi import WSGIServer
+    http_server = WSGIServer(('', 8333), app)
+    http_server.serve_forever()
