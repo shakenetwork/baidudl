@@ -132,7 +132,7 @@ app.controller('control', function($scope, $http){
 		.then(function(res){
 			$scope.message = 'Done';
 		}, function(res){
-			$scope.message = 'Fail to download. Make sure `aria2` is installed and `baidudl_rpc` is running';
+			$scope.message = 'Fail to download. Make sure `baidudl_rpc` is installed and running';
 		});
 	}
 })
