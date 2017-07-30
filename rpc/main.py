@@ -8,6 +8,8 @@ import json
 import socket
 import time
 import signal
+import sys
+from termcolor import colored
 from threading import Thread
 from HTMLParser import HTMLParser
 from flask import Flask, request
@@ -15,18 +17,25 @@ from flask import Flask, request
 app = Flask(__name__)
 
 # configuration
-domains = open('servers.txt').read().split('\n')[:-1]
-import config as cfg
-directory = cfg.directory
-if not directory:
-    print 'You should fill `config.py` first'
+import ConfigParser
+configs = {}
+config = ConfigParser.ConfigParser()
+config.read('./config.txt')
+for option in config.options('SectionOne'):
+    configs[option] = config.get('SectionOne', option)
+configs['max_threads'] = int(configs['max_threads'])
+configs['directory'] = configs['directory'].strip('\"')
+if not configs['directory']:
+    print colored('You should fill `Contents/resources/config.txt` first', 'red')
     print 'exiting...'
-    exit(1)
-max_threads = cfg.max_threads
+    sys.exit(-1)
+
+# initialization
+domains = open('servers.txt').read().split('\n')[:-1]
 h = HTMLParser()
 
 # launch aria2 rpc
-aria2_rpc = subprocess.Popen(['aria2c', '--enable-rpc', '--rpc-listen-port=6800', '--console-log-level=warn', '--rpc-secret=baidudl', '--rpc-allow-origin-all=true', '--rpc-listen-all=true'])
+aria2_rpc = subprocess.Popen(['aria2c', '--enable-rpc', '--rpc-listen-port=6800', '--console-log-level=warn', '--rpc-allow-origin-all=true', '--rpc-listen-all=true'])
 
 @app.route('/rpc', methods=['GET'])
 def main(count=0):
@@ -38,7 +47,7 @@ def main(count=0):
     # initialization
     link = base64.b64decode(request.args['link'])
     global domains
-    global directory
+    global configs
 
     # expand domain
     if 'bduss' in request.args and request.args['bduss']:
@@ -48,7 +57,7 @@ def main(count=0):
 
             # retrieve all download links
             header = {'User-Agent': 'netdisk;2.2.0;macbaiduyunguanjia'}
-            r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']})
+            r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']}, verify=False)
             res = json.loads(r.content)
 
             # update recorded domains
@@ -61,7 +70,7 @@ def main(count=0):
             print e
 
     # catch true url
-    r = requests.get(link, allow_redirects=False)
+    r = requests.get(link, allow_redirects=False, verify=False)
     url = r.headers['Location']
 
     # parse url
@@ -100,7 +109,7 @@ def main(count=0):
     f.close()
 
     # launch aria2
-    threads = max_threads if (16*len(urls) > max_threads) else 16*len(urls)
+    threads = configs['max_threads'] if (16*len(urls) > configs['max_threads']) else 16*len(urls)
 
     # prepare json request
     options = {}
@@ -108,12 +117,11 @@ def main(count=0):
     options['max-connection-per-server'] = '16'
     options['user-agent'] = 'netdisk;2.2.0;macbaiduyunguanjia'
     options['check-certificate'] = 'false'
-    options['dir'] = directory
+    options['dir'] = configs['directory']
     options['min-split-size'] = '1m'
     options['summary-interal'] = '0'
     options['out'] = parsed_query['fin'][0]
     params = []
-    params.append('token:baidudl')
     params.append(urls)
     params.append(options)
     jsonreq = {}
@@ -140,7 +148,7 @@ def signal_handler(signal, frame):
     print 'exiting...'
     aria2_rpc.terminate()
     aria2_rpc.wait()
-    exit(1)
+    sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
