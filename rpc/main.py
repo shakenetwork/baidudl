@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import requests
+import subprocess
 import urlparse
 import base64
 import os
 import json
 import socket
 import time
+from threading import Thread
 from HTMLParser import HTMLParser
 from flask import Flask, request
 
@@ -13,9 +15,13 @@ app = Flask(__name__)
 
 # configuration
 domains = open('servers.txt').read().split('\n')[:-1]
-directory = '/Users/Kyle/Downloads'
-max_threads = 164
+import config as cfg
+directory = cfg.directory
+max_threads = cfg.max_threads
 h = HTMLParser()
+
+# launch aria2 rpc
+subprocess.Popen(['aria2c', '--enable-rpc', '--rpc-listen-port=6800', '--console-log-level=warn', '--rpc-secret=baidudl', '--rpc-allow-origin-all=true', '--rpc-listen-all=true'])
 
 @app.route('/rpc', methods=['GET'])
 def main(count=0):
@@ -90,9 +96,29 @@ def main(count=0):
 
     # launch aria2
     threads = max_threads if (16*len(urls) > max_threads) else 16*len(urls)
-    cmd = 'aria2c -i tmp_urls.txt -k 1m -s %d -x 16 -d %s --console-log-level=error -U "netdisk;2.2.0;macbaiduyunguanjia" --check-certificate=false' % (threads, directory)
-    print cmd
-    os.system(cmd)
+
+    # prepare json request
+    options = {}
+    options['split'] = str(threads)
+    options['max-connection-per-server'] = '16'
+    options['user-agent'] = 'netdisk;2.2.0;macbaiduyunguanjia'
+    options['check-certificate'] = 'false'
+    options['dir'] = directory
+    options['min-split-size'] = '1m'
+    options['summary-interval'] = '0'
+    params = []
+    params.append('token:baidudl')
+    params.append(urls)
+    params.append(options)
+    jsonreq = {}
+    jsonreq['jsonrpc'] = '2.0'
+    jsonreq['id'] = parsed_query['fin']
+    jsonreq['method'] = 'aria2.addUri'
+    jsonreq['params'] = params
+
+    # send json request
+    jsonreq = json.dumps(jsonreq)
+    r = requests.post('http://localhost:6800/jsonrpc', jsonreq)
 
     return '1'
 
