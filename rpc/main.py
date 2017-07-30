@@ -29,7 +29,8 @@ config.read('./config.txt')
 for option in config.options('SectionOne'):
     configs[option] = config.get('SectionOne', option)
 configs['max_threads'] = int(configs['max_threads'])
-configs['directory'] = configs['directory'].strip('\"')
+configs['directory'] = os.path.expanduser(configs['directory'].strip('\"'))
+
 if not configs['directory']:
     print colored('You should fill `config.txt` first', 'red')
     print 'exiting...'
@@ -62,7 +63,7 @@ def main(count=0):
 
             # retrieve all download links
             header = {'User-Agent': 'netdisk;2.2.0;macbaiduyunguanjia'}
-            r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']}, verify=False)
+            r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']})
             res = json.loads(r.content)
 
             # update recorded domains
@@ -75,7 +76,7 @@ def main(count=0):
             print e
 
     # catch true url
-    r = requests.get(link, allow_redirects=False, verify=False)
+    r = requests.get(link, allow_redirects=False)
     url = r.headers['Location']
 
     # parse url

@@ -3,5 +3,7 @@ dist/main:
 	cp version.txt dist/
 	cp servers.txt dist/
 	cp config.txt dist/
+	rm -rf build main.spec
+	mv dist baidudl_rpc_OSX
 clean:
 	rm -rf dist build main.spec
