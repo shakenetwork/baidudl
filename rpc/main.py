@@ -16,8 +16,6 @@ domains = open('servers.txt').read().split('\n')[:-1]
 directory = '/Users/Kyle/Downloads'
 max_threads = 164
 h = HTMLParser()
-#https://d.pcs.baidu.com/rest/2.0/pcs/file?time=1501250608&version=2.2.0&vip=1&path=c681b5d6e90801ecf79c94f20e9a1831&fid=3892570184-250528-580625127441539&rt=sh&sign=FDTAERV-DCb740ccc5511e5e8fedcff06b081203-cxeW9Xee1lTRtcZVHG%2FYm6KV73g%3D&expires=8h&chkv=1&method=locatedownload&app_id=250528&esl=1&ver=4.0
-#https://d.pcs.baidu.com/rest/2.0/pcs/file?vip=1&app_id=250528&method=locatedownload&path=%2Ftest.mkv&ver=4.0
 
 @app.route('/rpc', methods=['GET'])
 def main(count=0):
@@ -33,20 +31,23 @@ def main(count=0):
 
     # expand domain
     if 'bduss' in request.args and request.args['bduss']:
-        # transfrom proxy link to api link
-        link2 = url_transform(link)
+        try:
+            # transfrom proxy link to api link
+            link2 = url_transform(link)
 
-        # retrieve all download links
-        header = {'User-Agent': 'netdisk;2.2.0;macbaiduyunguanjia'}
-        r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']})
-        res = json.loads(r.content)
+            # retrieve all download links
+            header = {'User-Agent': 'netdisk;2.2.0;macbaiduyunguanjia'}
+            r = requests.get(link2, headers=header, cookies={'BDUSS': request.args['bduss']})
+            res = json.loads(r.content)
 
-        # update recorded domains
-        urls = [x['url'] for x in res['urls']]
-        new_domains = [urlparse.urlparse(url).netloc for url in urls]
-        s1 = set(domains)
-        s2 = set(new_domains)
-        domains += list(s2-s1)
+            # update recorded domains
+            urls = [x['url'] for x in res['urls']]
+            new_domains = [urlparse.urlparse(url).netloc for url in urls]
+            s1 = set(domains)
+            s2 = set(new_domains)
+            domains += list(s2-s1)
+        except Exception as e:
+            print e
 
     # catch true url
     r = requests.get(link, allow_redirects=False)

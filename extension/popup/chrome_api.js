@@ -24,6 +24,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 		// display link
 		$scope.$apply(function(){
 			$scope.links[index].hlink = hlink;
+			$scope.links[index].glink = details.url;
 			$scope.message = "Ready."
 		})
 
@@ -34,6 +35,13 @@ chrome.webRequest.onHeadersReceived.addListener(
 	},
 	{urls: ["https://d.pcs.baidu.com/file/*", "http://d.pcs.baidu.com/file/*"]},
 	['responseHeaders']
+)
+chrome.webRequest.onBeforeRequest.addListener(
+	function(details){
+		console.log(details);
+	},
+	{urls: ['<all_urls>']},
+	['requestBody']
 )
 
 // add listener to handle received message
@@ -60,6 +68,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		else{
 			$scope.$apply(function(){
 				$scope.links[index].hlink = hlink;
+				$scope.links[index].glink = false;
 				$scope.message = "Ready."
 			})
 			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){

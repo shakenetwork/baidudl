@@ -128,7 +128,7 @@ app.controller('control', function($scope, $http){
 			$scope.message = 'hlink is not generated';
 			return;
 		}
-		$http.get('http://127.0.0.1:8333/rpc?link='+btoa($scope.links[index].hlink)+'&bduss='+$scope.bduss)
+		$http.get('http://127.0.0.1:8333/rpc?link='+btoa($scope.links[index].glink)+'&bduss='+$scope.bduss)
 		.then(function(res){
 			$scope.message = 'Done';
 		}, function(res){
