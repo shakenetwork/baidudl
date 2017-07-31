@@ -33,7 +33,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
 		})
 	},
-	{urls: ["https://d.pcs.baidu.com/file/*", "http://d.pcs.baidu.com/file/*"]},
+	{urls: ["*://d.pcs.baidu.com/file/*"]},
 	['responseHeaders']
 )
 chrome.webRequest.onBeforeSendHeaders.addListener(
@@ -52,8 +52,20 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 		return {'requestHeaders': headers}
 	},
-	{urls: ["https://d.pcs.baidu.com/file/*", "http://d.pcs.baidu.com/file/*"]},
+	{urls: ["*://d.pcs.baidu.com/file/*"]},
 	['blocking', 'requestHeaders']
+)
+chrome.webRequest.onBeforeRequest.addListener(
+	function(details){
+		console.log(details);
+		var url = new URL(details.url);
+		if(url.searchParams.get('bdstoken') == 'null')return;
+		url.searchParams.set('bdstoken', 'null');
+
+		return {'redirectUrl': url.href}
+	},
+	{urls: ["*://pan.baidu.com/api/sharedownload*", "*://pan.baidu.com/api/download*"]},
+	['blocking', 'requestBody']
 )
 
 // add listener to handle received message
