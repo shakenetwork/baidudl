@@ -103,6 +103,8 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 					})
 				}
 
+				if(res.errno == 118) err_msg = "Error: no download permission"
+
 				// other errors
 				var event = new CustomEvent("error", {detail: err_msg});
 				window.dispatchEvent(event);
@@ -162,6 +164,7 @@ function share(fs_id, cb){
 			if(d.errno != 0){
 				console.log(d);
 				var err_msg = "Error: cant't share this file";
+				if(d.errno == -3)err_msg = "Error: this is not your file, you can't share it"
 				if(d.errno == 110)err_msg = "Error: this file has been shared too frequently"
 				var event = new CustomEvent("error", {detail: err_msg});
 				window.dispatchEvent(event);

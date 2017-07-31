@@ -121,6 +121,7 @@ app.controller('control', function($scope, $http){
 	$scope.clear = function(){
 		chrome.storage.local.remove('data');
 		$scope.message = "Cache is cleared";
+		window.close();
 	}
 
 	$scope.download = function(index){

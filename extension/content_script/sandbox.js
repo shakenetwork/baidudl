@@ -34,20 +34,24 @@ window.addEventListener('vcode', function(req){
 
 // proxy for retrieving high speed link
 chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
+	if('vcode' in req){
+		var event = new CustomEvent('verify', {detail: req});
+		window.dispatchEvent(event);
+		return;
+	}
 	if('fs_id' in req && 'index' in req && 'isdir' in req){
 		var event = new CustomEvent("hlink1", {detail: req});
 		window.dispatchEvent(event);
+		return;
 	}
 	if('greeting' in req){
 		sendResponse({greeting: 'yes'});
+		return;
 	}
 	if('page' in req){
 		var event = new CustomEvent('run', {detail: req});
 		window.dispatchEvent(event);
 		sendResponse('run');
-	}
-	if('vcode' in req){
-		var event = new CustomEvent('verify', {detail: req});
-		window.dispatchEvent(event);
+		return;
 	}
 })
