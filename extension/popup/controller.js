@@ -168,9 +168,7 @@ app.controller('control', function($scope, $http){
 				$http.post('http://127.0.0.1:6800/jsonrpc', jsonreq)
 
 				// notification
-				$scope.$apply(function(){
-					$scope.message = 'Download starts and the speed is ' + url.searchParams.get('csl');
-				});
+				$scope.message = 'Download starts and the speed is ' + url.searchParams.get('csl');
 			});
 		}, function(res){
 			if(res.status < 0){
