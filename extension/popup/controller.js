@@ -141,7 +141,7 @@ app.controller('control', function($scope, $http){
 		// try to connect to aria2 rpc
 		$http.post('http://127.0.0.1:6800/jsonrpc', {'jsonrpc': '2.0', 'method': 'aria2.tellActive', 'id': 'connect'})
 		.then(function(res){
-			get_all_hlinks($scope.links[index].glink, function(urls){
+			get_all_hlinks(index, function(urls){
 				var max_threads = 164;
 				var threads = (max_threads > 16*urls.length)? 16*urls.length : max_threads;
 				var url = new URL(urls[0]);

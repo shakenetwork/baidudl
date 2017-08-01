@@ -44,14 +44,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 		for(var i=0; i<headers.length; i++){
 			if(headers[i].name == 'User-Agent'){
 				headers[i].value = 'netdisk;2.2.0;macbaiduyunguanjia';
-			}
-			if(headers[i].name == 'Cookie'){
-				var cookies = headers[i].value.split('; ');
-				var cookie = cookies.filter(function(e){
-					return e.substr(0, 6) == 'BDUSS='
-				})
-				cookie = cookie[0];
-				headers[i].value = cookie;
+				break;
 			}
 		}
 		return {'requestHeaders': headers}
