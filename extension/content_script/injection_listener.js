@@ -18,7 +18,7 @@ window.addEventListener('hlink1', function(req){
 				var new_yunData = JSON.parse(data);
 
 				// get hlinks and dispatch it
-				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, isdir, [new_yunData.file_list.list[0].fs_id], function(links, indices){
+				get_hlink(new_yunData, undefined, undefined, [req.detail.index], 1, isdir, [new_yunData.file_list.list[0].fs_id], function(links, indices){
 					console.log("Link received");
 					var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 					window.dispatchEvent(event);

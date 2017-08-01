@@ -105,7 +105,10 @@ app.controller('control', function($scope, $http){
 	}
 
 	// do vcode verification
-	$scope.verify = function(vcode_str, vcode_input, indices){
+	$scope.verify = function(index, vcode_input){
+		var vcode_str = $scope.vcodes[index].vcode_str;
+		var indices = $scope.vcodes[index].indices;
+
 		var x = $scope.links[indices[0]];
 		var fs_id_list = indices.map(function(index){
 			return $scope.links[index].fs_id;

@@ -115,7 +115,7 @@ function get_hlink(yunData, extra, vcode, indices, type, dir, fidlist, cb){
 			else{
 				var links = [];
 				res.list.forEach(function(e){
-					var index = fidlist.indexOf(e.fs_id);
+					var index = fidlist.indexOf(e.fs_id+'');
 					links[index] = e.dlink;
 				});
 				cb(links, indices);
@@ -300,7 +300,7 @@ function get_home_links(list){
 			result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]], isdir: 1});
 
 			// get directory dlink
-			get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(links, indices){
+			get_hlink(yunData, 0, undefined, [i+links.length], 3, 1, [fidlist[i]], function(links, indices){
 				var event =  new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 				window.dispatchEvent(event);
 			});

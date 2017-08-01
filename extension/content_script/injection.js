@@ -21,15 +21,15 @@ function injection(page){
 		var length = yunData.FILEINFO.length;
 
 		// logic for non-directory share files
-		if(length == 0 || !getURLParameter('path')){
+		if(!getURLParameter('path') || (length == 1 && !yunData.FILEINFO[0].isdir)){
 
 			// dispatch general information
-			var result = [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA", isdir: dir}];
+			var result = [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA", isdir: 0}];
 			var event = new CustomEvent("dlink", {detail: result});
 			window.dispatchEvent(event);
 
 			// get hlink and dispatch it
-			get_hlink(yunData, 1, undefined, 0, 2, dir, [yunData.FS_ID], function(links, indices){
+			get_hlink(yunData, 1, undefined, [0], 2, 0, [yunData.FS_ID], function(links, indices){
 				var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 				window.dispatchEvent(event);
 			});
@@ -112,7 +112,7 @@ function injection(page){
 							break;
 						}
 					}
-					get_hlink(yunData, 0, undefined, index, 3, 1, [fs_id], function(link, index){
+					get_hlink(yunData, 0, undefined, [index], 3, 1, [fs_id], function(link, index){
 						var event =  new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 						window.dispatchEvent(event);
 					})
