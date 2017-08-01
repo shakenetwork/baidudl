@@ -1,4 +1,0 @@
-[SectionOne]
-
-directory = "~/Downloads"
-max_threads = 164
