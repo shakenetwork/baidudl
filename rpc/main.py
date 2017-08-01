@@ -14,10 +14,9 @@ from threading import Thread
 from HTMLParser import HTMLParser
 from flask import Flask, request
 
-# for compiling
-#addr = sys.argv[0]
-#cwd = os.path.realpath(os.path.join(addr, '..'))
-#os.chdir(cwd)
+fpath = os.path.abspath(__file__)
+dpath = os.path.abspath(os.path.join(fpath, os.pardir))
+os.chdir(dpath)
 
 app = Flask(__name__)
 
@@ -159,6 +158,13 @@ signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
     print ' * baidudl_rpc is running'
-    from gevent.wsgi import WSGIServer
-    http_server = WSGIServer(('', 8333), app)
-    http_server.serve_forever()
+    if os.name == 'posix':
+        from gevent.wsgi import WSGIServer
+        http_server = WSGIServer(('', 8333), app)
+        http_server.serve_forever()
+    elif os.name == 'nt':
+        app.run(port=8333)
+    else:
+        print 'Unknown OS'
+        print 'exitint...'
+        sys.exit(-1)

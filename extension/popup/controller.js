@@ -8,6 +8,7 @@ app.controller('control', function($scope, $http){
 	$scope.vcode_input = "";
 	$scope.bduss;
 
+	// get pan.baidu.com credential
 	chrome.cookies.get({url: 'https://pan.baidu.com/', name: 'BDUSS'}, function(cookie){
 		$scope.$apply(function(){
 			$scope.bduss = cookie? cookie.value: '';
@@ -131,16 +132,53 @@ app.controller('control', function($scope, $http){
 	}
 
 	$scope.download = function(index){
+		// whether hlink is generated
 		if(!$scope.links[index].hlink){
 			$scope.message = 'hlink is not generated';
 			return;
 		}
-		$http.get('http://127.0.0.1:8333/rpc?link='+btoa($scope.links[index].glink)+'&bduss='+$scope.bduss)
+
+		// try to connect to aria2 rpc
+		$http.post('http://127.0.0.1:6800/jsonrpc', {'jsonrpc': '2.0', 'method': 'aria2.tellActive', 'id': 'connect'})
 		.then(function(res){
-			$scope.message = 'Done';
+			get_all_hlinks($scope.links[index].glink, function(urls){
+				var max_threads = 164;
+				var threads = (max_threads > 16*urls.length)? 16*urls.length : max_threads;
+				var url = new URL(urls[0]);
+
+				// prepare json request
+				options = {};
+				options['split'] = threads+'';
+				options['max-connection-per-server'] = '16';
+				options['user-agent'] = 'netdisk;2.2.0;macbaiduyunguanjia';
+				options['check-certificate'] = 'false';
+				options['min-split-size'] = '1m';
+				options['summary-interal'] = '0';
+				options['out'] = url.searchParams.get('fin');
+				params = [];
+				params.push(urls);
+				params.push(options);
+				jsonreq = {};
+				jsonreq['jsonrpc'] = '2.0';
+				jsonreq['id'] = url.searchParams.get('fin');
+				jsonreq['method'] = 'aria2.addUri';
+				jsonreq['params'] = params;
+
+				// send request to aria rpc
+				$http.post('http://127.0.0.1:6800/jsonrpc', jsonreq)
+
+				// notification
+				$scope.$apply(function(){
+					$scope.message = 'Download starts and the speed is ' + url.searchParams.get('csl');
+				});
+			});
 		}, function(res){
-			$scope.message = 'Fail to download. Make sure `baidudl_rpc` is installed and running';
-		});
+			if(res.status < 0){
+				$scope.message = 'Warning: aria2c is not running on port 6800';
+				return;
+			}else{
+				$scope.message = 'Error: can\' connect to aria2'
+			}
+		})
 	}
 })
-
