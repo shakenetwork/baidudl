@@ -74,7 +74,7 @@ app.controller('control', function($scope, $http){
 	// copy links to clipboard
 	$scope.copy = function(i, type){
 		if(type=='hlink')textarea.val($scope.links[i].hlink)
-		else textarea.val($scope.links[i].dlink)
+		else textarea.val($scope.links[i].glink)
 		if(!textarea.val()){
 			$scope.message = "This field is empty"
 			return
@@ -86,9 +86,9 @@ app.controller('control', function($scope, $http){
 	$scope.copyAll = function(type){
 		var text = "";
 		for(var i=0; i<$scope.links.length; i++){
-			if(type == 'dlink'){
-				if(!$scope.links[i].dlink)continue
-				text += $scope.links[i].dlink+'\n';
+			if(type == 'glink'){
+				if(!$scope.links[i].glink)continue
+				text += $scope.links[i].glink+'\n';
 			}
 			else{
 				if(!$scope.links[i].hlink)continue

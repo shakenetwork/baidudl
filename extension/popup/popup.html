@@ -14,7 +14,7 @@
 				<tr>
 					<td>File name</td>
 					<td>Glinks</td>
-					<td><button ng-click="copyAll('dlink')">CopyAll</button></td>
+					<td><button ng-click="copyAll('glink')">CopyAll</button></td>
 					<td>Hlinks</td>
 					<td><button ng-click="generateAll()">GenerateAll</button></td>
 					<td><button ng-click="copyAll('hlink')">CopyAll</button></td>
@@ -23,7 +23,7 @@
 				<tr ng-repeat="x in links">
 					<td><input style="width: 300px" type='text' value={{x.path}} ng-disabled='true'></td>
 					<td><input style="width: 50px"type='text' value={{x.glink}} ng-disabled='true'></td>
-					<td><button ng-click="copy($index, 'dlink')">Copy</button></td>
+					<td><button ng-click="copy($index, 'glink')">Copy</button></td>
 					<td><input style="width: 50px"type='text' value={{x.hlink}} ng-disabled='true'></td>
 					<td><button ng-click="generate($index)">Generate</button></td>
 					<td><button ng-click="copy($index, 'hlink')">Copy</button></td>
