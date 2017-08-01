@@ -4,8 +4,6 @@ function injection(page){
 
 	// logic for homepage
 	if(url.match(/https?:\/\/pan\.baidu\.com\/disk\/home#list/)){
-		console.log("Homepage mode");
-
 		console.log("Code Injected");
 		
 		// get sign parameter
@@ -15,50 +13,15 @@ function injection(page){
 		
 		// list directory
 		list_dir(1, page, function(list){
-			var dict = {};
-			list.forEach(function(e){
-				var len = e.path.split('/').length;
-				dict[e.fs_id] = e.path.split('/')[len-1];
-			}) 
-
-			// get fid list
-			var fidlist = list.map(function(d){return d.fs_id});
-
-			// get dlink by fid list
-			get_dlink(sign, fidlist, function(links){
-				console.log(links);
-				result = [];
-
-				// process non-directory files
-				for(var i=0; i<links.length; i++){
-					result.push({dlink: links[i].dlink, hlink: "", fs_id: links[i].fs_id, path: dict[links[i].fs_id], isdir: 0});
-					var index = fidlist.indexOf(links[i].fs_id);
-					fidlist.splice(index, 1);
-				}
-
-				// process directory
-				for(var i=0; i<fidlist.length; i++){
-					result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]], isdir: 1});
-
-					// get directory dlink
-					get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(link, index){
-						var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
-						window.dispatchEvent(event);
-					});
-				}
-
-				// dispatch result
-				var event =  new CustomEvent("dlink", {detail: result});
-				window.dispatchEvent(event);
-			});
+			get_home_links(list);
 		})
 	}
 	// logic for share pages
 	else if(url.match(/https?:\/\/pan\.baidu\.com\/(s\/|share\/link)/)){
-		var dir = yunData.FILEINFO.length ? yunData.FILEINFO[0].isdir : 0;
+		var length = yunData.FILEINFO.length;
 
 		// logic for non-directory share files
-		if(dir == 0 || getURLParameter('path') == "%2F" || !getURLParameter('path')){
+		if(length == 0 || !getURLParameter('path')){
 
 			// dispatch general information
 			var result = [{path: yunData.FILENAME, hlink: "", fs_id: yunData.FS_ID, dlink: "NA", isdir: dir}];
@@ -73,22 +36,14 @@ function injection(page){
 			return;
 		}
 		// logic for directory share files
+		else if(getURLParameter('path') == '%2F'){
+			var list = yunData.FILEINFO;
+			get_share_links(list);
+		}
 		else{
 			// list directory
 			list_dir(2, 1, function(list){
-
-				// dispatch general information
-				links = list.map(function(e){return {fs_id: e.fs_id, dlink: "NA", hlink: "", path: e.path, isdir: e.isdir}});
-				var event = new CustomEvent("dlink", {detail: links});
-				window.dispatchEvent(event);
-
-				// get hlink for each file and dispatch it
-				for(var i=0; i<links.length; i++){
-					get_hlink(yunData, 1, undefined, i, 2, 0, [links[i].fs_id], function(link, index){
-						var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
-						window.dispatchEvent(event);
-					})
-				}
+				get_share_links(list);
 			})
 		}
 	}

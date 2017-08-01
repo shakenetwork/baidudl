@@ -58,6 +58,10 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 		var url = "/api/download?sign="+sign+"&timestamp="+yunData.timestamp+"&fidlist="+JSON.stringify(fidlist)+"&bdstoken="+yunData.MYBDSTOKEN+"&type=batch";
 		var data = "encrypt=0&product=share&type=batch"
 	}
+	else if(type == 4){
+		var url = "/api/sharedownload?sign="+yunData.SIGN+"&timestamp="+yunData.TIMESTAMP;
+		var data = "encrypt=0&product=share&uk="+yunData.SHARE_UK+"&primaryid="+yunData.SHARE_ID+'&type=batch';
+	}
 	else return;
 
 	// additional information
@@ -261,3 +265,65 @@ function list_dir(type, page, cb){
 	})
 }
 
+// get links by file list in home page
+function get_home_links(list){
+	var dict = {};
+	list.forEach(function(e){
+		var len = e.path.split('/').length;
+		dict[e.fs_id] = e.path.split('/')[len-1];
+	})
+
+	// get fid list
+	var fidlist = list.map(function(d){return d.fs_id});
+
+	// get dlink by fid list
+	get_dlink(sign, fidlist, function(links){
+		console.log(links);
+		result = [];
+
+		// process non-directory files
+		for(var i=0; i<links.length; i++){
+			result.push({dlink: links[i].dlink, hlink: "", fs_id: links[i].fs_id, path: dict[links[i].fs_id], isdir: 0});
+			var index = fidlist.indexOf(links[i].fs_id);
+			fidlist.splice(index, 1);
+		}
+
+		// process directory
+		for(var i=0; i<fidlist.length; i++){
+			result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]], isdir: 1});
+
+			// get directory dlink
+			get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(link, index){
+				var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
+				window.dispatchEvent(event);
+			});
+		}
+
+		// dispatch result
+		var event =  new CustomEvent("dlink", {detail: result});
+		window.dispatchEvent(event);
+	});
+}
+
+// get links by file list in share page
+function get_share_links(list){
+	// dispatch general information
+	var links = list.map(function(e){return {fs_id: e.fs_id, dlink: "NA", hlink: "", path: e.path, isdir: e.isdir}});
+	var event = new CustomEvent("dlink", {detail: links});
+	window.dispatchEvent(event);
+
+	// get hlink for each file and dispatch it
+	for(var i=0; i<links.length; i++){
+		if(!links[i].isdir){
+			get_hlink(yunData, 1, undefined, i, 2, 0, [links[i].fs_id], function(link, index){
+				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
+				window.dispatchEvent(event);
+			})
+		}else{
+			get_hlink(yunData, 1, undefined, i, 4, 1, [links[i].fs_id], function(link, index){
+				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
+				window.dispatchEvent(event);
+			})
+		}
+	}
+}
