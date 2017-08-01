@@ -18,9 +18,9 @@ window.addEventListener('hlink1', function(req){
 				var new_yunData = JSON.parse(data);
 
 				// get hlinks and dispatch it
-				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, isdir, [new_yunData.file_list.list[0].fs_id], function(link, index){
+				get_hlink(new_yunData, undefined, undefined, req.detail.index, 1, isdir, [new_yunData.file_list.list[0].fs_id], function(links, indices){
 					console.log("Link received");
-					var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
+					var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 					window.dispatchEvent(event);
 				})
 
@@ -38,8 +38,8 @@ window.addEventListener('run', function(req){
 
 window.addEventListener('verify', function(req){
 	// vcode verification
-	get_hlink(yunData, 1, req.detail.vcode, req.detail.index, 2, req.detail.isdir, [req.detail.fs_id], function(link, index){
-		var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
+	get_hlink(yunData, 1, req.detail.vcode, req.detail.indices, 2, req.detail.isdir, req.detail.fs_id_list, function(links, indices){
+		var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 		window.dispatchEvent(event);
 	});
 })

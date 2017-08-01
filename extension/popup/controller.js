@@ -105,10 +105,13 @@ app.controller('control', function($scope, $http){
 	}
 
 	// do vcode verification
-	$scope.verify = function(vcode_str, vcode_input, index){
-		var x = $scope.links[index];
+	$scope.verify = function(vcode_str, vcode_input, indices){
+		var x = $scope.links[indices[0]];
+		var fs_id_list = indices.map(function(index){
+			return $scope.links[index].fs_id;
+		})
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, index: index, fs_id: x.fs_id, isdir: x.isdir});
+			chrome.tabs.sendMessage(tabs[0].id, {vcode: {vcode_str: vcode_str, vcode_input: vcode_input}, indices: indices, fs_id_list: fs_id_list, isdir: x.isdir});
 			$scope.$apply(function(){
 				var vcodes = $scope.vcodes.filter(function(e){
 					return e.vcode_str != vcode_str;

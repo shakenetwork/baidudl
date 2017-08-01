@@ -30,13 +30,13 @@ function b64(t) {
 };
 
 // basic function to get hlink
-function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
+function get_hlink(yunData, extra, vcode, indices, type, dir, fidlist, cb){
 	/*
 	 * 	Parameters:
 	 * 		yunData:	which yunData to use
 	 * 		extra:		whether extra encryption needed
 	 * 		vcode:		verification code information
-	 * 		index:		what the index of this file in popup is
+	 * 		indices:	what the indices of these files in popup are
 	 * 		type:		which type of information to use
 	 * 		dir:		whether this file is a directory
 	 * 		fidlist:	whose hlink you want to get
@@ -97,7 +97,7 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 						}
 
 						// now we have got verification image, send it to popup
-						var event = new CustomEvent("vcode", {detail: {vcode: result.vcode, index: index}});
+						var event = new CustomEvent("vcode", {detail: {vcode: result.vcode, indices: indices}});
 						window.dispatchEvent(event);
 						return;
 					})
@@ -111,8 +111,15 @@ function get_hlink(yunData, extra, vcode, index, type, dir, fidlist, cb){
 				return;
 			}
 			// now we have got hlink
-			if(dir)cb(res.dlink, index);
-			else cb(res.list[0].dlink, index);
+			if(dir)cb([res.dlink], [indices]);
+			else{
+				var links = [];
+				res.list.forEach(function(e){
+					var index = fidlist.indexOf(e.fs_id);
+					links[index] = e.dlink;
+				});
+				cb(links, indices);
+			}
 		}
 	});
 }
@@ -293,8 +300,8 @@ function get_home_links(list){
 			result.push({dlink: "NA", hlink: "", fs_id: fidlist[i], path: dict[fidlist[i]], isdir: 1});
 
 			// get directory dlink
-			get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(link, index){
-				var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
+			get_hlink(yunData, 0, undefined, i+links.length, 3, 1, [fidlist[i]], function(links, indices){
+				var event =  new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 				window.dispatchEvent(event);
 			});
 		}
@@ -313,17 +320,25 @@ function get_share_links(list){
 	window.dispatchEvent(event);
 
 	// get hlink for each file and dispatch it
+	var file_fs_id_list = [];
+	var file_indices = [];
+	var dir_fs_id_list = [];
+	var dir_indices = [];
 	for(var i=0; i<links.length; i++){
 		if(!links[i].isdir){
-			get_hlink(yunData, 1, undefined, i, 2, 0, [links[i].fs_id], function(link, index){
-				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
-				window.dispatchEvent(event);
-			})
+			file_fs_id_list.push(links[i].fs_id);
+			file_indices.push(i);
 		}else{
-			get_hlink(yunData, 1, undefined, i, 4, 1, [links[i].fs_id], function(link, index){
-				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
-				window.dispatchEvent(event);
-			})
+			dir_fs_id_list.push(links[i].fs_id);
+			dir_indices.push(i);
 		}
 	}
+	get_hlink(yunData, 1, undefined, file_indices, 2, 0, file_fs_id_list, function(links, indices){
+		console.log(links);
+	})
+	get_hlink(yunData, 1, undefined, dir_indices, 4, 1, dir_fs_id_list, function(links, indices){
+		console.log(links);
+		//var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
+		//window.dispatchEvent(event);
+	})
 }

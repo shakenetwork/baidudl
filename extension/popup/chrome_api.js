@@ -32,9 +32,10 @@ chrome.webRequest.onHeadersReceived.addListener(
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
 			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
 		})
+		return {'redirectUrl': 'javascript:'}
 	},
 	{urls: ["*://d.pcs.baidu.com/file/*"]},
-	['responseHeaders']
+	['responseHeaders', 'blocking']
 )
 chrome.webRequest.onBeforeSendHeaders.addListener(
 	function(details){
@@ -57,7 +58,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 )
 chrome.webRequest.onBeforeRequest.addListener(
 	function(details){
-		console.log(details);
 		var url = new URL(details.url);
 		if(url.searchParams.get('bdstoken') == 'null')return;
 		url.searchParams.set('bdstoken', 'null');
@@ -82,23 +82,37 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 		sendResponse('Success');
 	}
 	if(req.type == "hlink2"){
-		var hlink = req.result.link;
-		var index = req.result.index;
-		var url = new URL(hlink);
-		if(url.host == 'd.pcs.baidu.com'){
-			$http = angular.injector(["ng"]).get("$http");
-			$http.head(hlink+'#'+index);
-		}
-		else{
+		var links = req.result.links;
+		var indices = req.result.indices;
+		if(links.length != indices.length){
 			$scope.$apply(function(){
-				$scope.links[index].hlink = hlink;
-				$scope.links[index].glink = false;
-				$scope.message = "Ready."
-			})
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
-			})
+				$scope.message = 'Error: response length error';
+				console.log(links);
+				console.log(indices);
+			});
+			return;
 		}
+		for(var i=0; i < links.length; i++){
+			var hlink = links[i];
+			var index = indices[i];
+			var url = new URL(hlink);
+			if(url.host == 'd.pcs.baidu.com'){
+				$http = angular.injector(["ng"]).get("$http");
+				$http.head(hlink+'#'+index).then(function(){return true}, function(){return false});
+			}
+			else{
+				$scope.$apply(function(){
+					$scope.links[index].hlink = hlink;
+					$scope.links[index].glink = false;
+				})
+			}
+		}
+		$scope.$apply(function(){
+			$scope.message = "Ready."
+		})
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+			chrome.storage.local.set({'data': {url: tabs[0].url, timestamp: Number(new Date()), links: $scope.links, page: $scope.page}})
+		})
 	}
 	if(req.type == "error"){
 		$scope.$apply(function(){
@@ -108,7 +122,7 @@ chrome.runtime.onMessage.addListener(function(req, sender, sendResponse){
 
 	if(req.type == "vcode"){
 		$scope.$apply(function(){
-			$scope.vcodes.push({vcode_str: req.result.vcode, index: req.result.index})
+			$scope.vcodes.push({vcode_str: req.result.vcode, indices: req.result.indices});
 			$scope.message = "vcode required...";
 		})
 	}

@@ -29,8 +29,8 @@ function injection(page){
 			window.dispatchEvent(event);
 
 			// get hlink and dispatch it
-			get_hlink(yunData, 1, undefined, 0, 2, dir, [yunData.FS_ID], function(link, index){
-				var event = new CustomEvent("hlink2", {detail: {link: link, index: index}});
+			get_hlink(yunData, 1, undefined, 0, 2, dir, [yunData.FS_ID], function(links, indices){
+				var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 				window.dispatchEvent(event);
 			});
 			return;
@@ -87,10 +87,6 @@ function injection(page){
 						var index = res.list.indexOf(e);
 						result.push({dlink: "NA", hlink: "", fs_id: e.fs_id, path: e.path.split('/')[len-1], isdir: 1});
 						fidlist2.push(e.fs_id);
-						//get_hlink(yunData, 0, undefined, index, 3, 1, [e.fs_id], function(link, index){
-						//	var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
-						//	window.dispatchEvent(event);
-						//});
 					}
 				})
 				if(fidlist1.length == 0){
@@ -117,7 +113,7 @@ function injection(page){
 						}
 					}
 					get_hlink(yunData, 0, undefined, index, 3, 1, [fs_id], function(link, index){
-						var event =  new CustomEvent("hlink2", {detail: {link: link, index: index}});
+						var event =  new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 						window.dispatchEvent(event);
 					})
 				})
