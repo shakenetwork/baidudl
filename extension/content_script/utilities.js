@@ -113,11 +113,14 @@ function get_hlink(yunData, extra, vcode, indices, type, dir, fidlist, cb){
 			// now we have got hlink
 			if(dir)cb([res.dlink], [indices]);
 			else{
-				var links = [];
+				var d = {};
 				res.list.forEach(function(e){
-					var index = fidlist.indexOf(e.fs_id+'');
-					links[index] = e.dlink;
-				});
+					d[e.fs_id] = e.dlink;
+				})
+				var links = [];
+				for(var i=0; i<fidlist.length; i++){
+					links.push(d[fidlist[i]]);
+				}
 				cb(links, indices);
 			}
 		}
@@ -333,12 +336,16 @@ function get_share_links(list){
 			dir_indices.push(i);
 		}
 	}
-	get_hlink(yunData, 1, undefined, file_indices, 2, 0, file_fs_id_list, function(links, indices){
-		console.log(links);
-	})
-	get_hlink(yunData, 1, undefined, dir_indices, 4, 1, dir_fs_id_list, function(links, indices){
-		console.log(links);
-		//var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
-		//window.dispatchEvent(event);
-	})
+	if(file_fs_id_list.length != 0){
+		get_hlink(yunData, 1, undefined, file_indices, 2, 0, file_fs_id_list, function(links, indices){
+			var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
+			window.dispatchEvent(event);
+		})
+	}
+	if(dir_fs_id_list.length != 0){
+		get_hlink(yunData, 1, undefined, dir_indices, 4, 1, dir_fs_id_list, function(links, indices){
+			var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
+			window.dispatchEvent(event);
+		})
+	}
 }
