@@ -325,25 +325,19 @@ function get_share_links(list){
 	// get hlink for each file and dispatch it
 	var file_fs_id_list = [];
 	var file_indices = [];
-	var dir_fs_id_list = [];
-	var dir_indices = [];
 	for(var i=0; i<links.length; i++){
 		if(!links[i].isdir){
 			file_fs_id_list.push(links[i].fs_id);
 			file_indices.push(i);
 		}else{
-			dir_fs_id_list.push(links[i].fs_id);
-			dir_indices.push(i);
+			get_hlink(yunData, 1, undefined, [i], 4, 1, [links[i].fs_id], function(links, indices){
+				var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
+				window.dispatchEvent(event);
+			})
 		}
 	}
 	if(file_fs_id_list.length != 0){
 		get_hlink(yunData, 1, undefined, file_indices, 2, 0, file_fs_id_list, function(links, indices){
-			var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
-			window.dispatchEvent(event);
-		})
-	}
-	if(dir_fs_id_list.length != 0){
-		get_hlink(yunData, 1, undefined, dir_indices, 4, 1, dir_fs_id_list, function(links, indices){
 			var event = new CustomEvent("hlink2", {detail: {links: links, indices: indices}});
 			window.dispatchEvent(event);
 		})
