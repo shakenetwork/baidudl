@@ -275,6 +275,35 @@ function list_dir(type, page, cb){
 	})
 }
 
+// list search result
+function list_search(cb){
+	// get keyword
+	var key = getURLParameter('key');
+
+	// get sign parameter
+	u = new Function("return " + yunData.sign2)()
+	sign = b64(u(yunData.sign5, yunData.sign1));
+	sign = encodeURIComponent(sign);
+
+	// list search result
+	$.ajax({
+		type: 'GET',
+		url: 'https://pan.baidu.com/api/search?recursion=1&order=time&desc=1&showempty=0&page=1&num=100&key='+key,
+		dataType: 'json',
+		success: function(res){
+			// in case of failure
+			if(res.errno != 0){
+				console.log(res);
+				err_msg = "Warning: can't get search result";
+				event = new CustomEvent("error", {detail: err_msg});
+				window.dispatchEvent(event);
+				return;
+			}
+			cb(res.list);
+		}
+	})
+}
+
 // get links by file list in home page
 function get_home_links(list){
 	var dict = {};
@@ -288,7 +317,6 @@ function get_home_links(list){
 
 	// get dlink by fid list
 	get_dlink(sign, fidlist, function(links){
-		console.log(links);
 		result = [];
 
 		// process non-directory files
