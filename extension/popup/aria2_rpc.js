@@ -25,6 +25,12 @@ function get_all_hlinks(index, cb){
 	if($scope.bduss){
 		var url = 'https://d.pcs.baidu.com/rest/2.0/pcs/file?time='+parsed_glink.searchParams.get('time')+'&version=2.2.0&vip=1&path='+pathnames[pathnames.length-1]+'&fid='+parsed_glink.searchParams.get('fid')+'&rt=sh&sign='+parsed_glink.searchParams.get('sign')+'&expires=8h&chkv=1&method=locatedownload&app_id=250528&esl=0&ver=4.0';
 
+		var urls = servers.map(function(e){
+			parsed_hlink.host = e;
+			parsed_hlink.protocol = 'http';
+			return parsed_hlink.href;
+		})
+
 		$http.get(url)
 		.then(function(res){
 			var domains = res.data.urls.map(function(e){
@@ -38,19 +44,12 @@ function get_all_hlinks(index, cb){
 			})
 			cb(urls);
 		}, function(res){
+			console.log('can\'t get hlink list');
 			console.log(res);
-			$scope.$apply(function(){
-				$scope.message = 'Error: can\' get high speed url list'
-			});
+			cb(urls);
 		})
 	}
 	else{
-		var urls = servers.map(function(e){
-			parsed_hlink.host = e;
-			parsed_hlink.protocol = 'http';
-			return parsed_hlink.href;
-		})
-		console.log(urls);
 		cb(urls);
 	}
 }
