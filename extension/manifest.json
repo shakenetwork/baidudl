@@ -4,14 +4,7 @@
 	"name": "baidudl",
 	"short_name": "baidudl",
 	"description": "Extract high speed download links from pan.baidu.com. Github: https://github.com/Kyle-Kyle/baidudl",
-	"version": "1.3.5",
-
-	"web_accessible_resources": [
-		"content_script/injection_listener.js",
-		"content_script/injection.js",
-		"content_script/utilities.js",
-		"resource/jquery.cookie.js"
-	],
+	"version": "2.0.0",
 
 	"icons": {
 		"16": "icon/icon16.png",
@@ -20,26 +13,29 @@
 		"128": "icon/icon128.png"
 	},
 
-	"browser_action": {
+	"page_action": {
 		"default_popup": "popup/popup.html",
 		"default_title"	: "Click here!"
 	},
 
-	"content_scripts": [{
-		"matches": ["https://pan.baidu.com/*", "http://pan.baidu.com/*"],
-		"js": ["resource/jquery.min.js"],
-		"run_at": "document_start"
-	}],
+	"background": {
+		"scripts": [
+			"background/angular.min.js",
+			"background/background.js",
+			"background/utilities.js"
+		]
+	},
+
+	"options_page": "options/options.html",
 
 	"permissions": [
-		"activeTab",
+		"tabs",
 		"storage",
-		"http://127.0.0.1:8333/",
-		"https://pan.baidu.com/",
 		"cookies",
-		"https://d.pcs.baidu.com/",
-		"http://d.pcs.baidu.com/",
 		"webRequest",
-		"webRequestBlocking"
+		"webRequestBlocking",
+		"http://127.0.0.1:8333/",
+		"*://pan.baidu.com/",
+		"*://d.pcs.baidu.com/"
 	]
 }

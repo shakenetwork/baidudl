@@ -18,7 +18,7 @@ Click on the "Load unpacked extension..." button
 Select the directory containing baidudl
 
 ## How to use baidudl so that your download speed won't be limited
-![a screenshot](https://raw.githubusercontent.com/Kyle-Kyle/baidudl/master/screenshot.png)
+![a screenshot](https://raw.githubusercontent.com/Kyle-Kyle/baidudl/master/extension/screenshot.png)
 
 ### Step 1:
 Login into [Baidu netdisk](https://pan.baidu.com)
