@@ -7,6 +7,7 @@ d = os.path.realpath(os.path.join(f, os.path.pardir))
 os.chdir(d)
 
 aria2 = os.path.join(d, 'aria2c')
+aria2 = '\"'+aria2+'\"'
 
 print ''
 print 'baidudl_rpc is ready...'
