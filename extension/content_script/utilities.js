@@ -140,6 +140,7 @@ function get_dlink(sign, fidlist, cb){
 		success: function(d){
 			var err_msg = "Error: can't get dlinks";
 			if(d.errno != 0){
+				console.log(d);
 				var event = new CustomEvent("error", {detail: err_msg});
 				window.dispatchEvent(event);
 				return;
